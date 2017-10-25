@@ -1,15 +1,18 @@
-#Introduction
+Introduction
+============
 
 An application that helps organizing your music library.
 
-#Installation
+Installation
+============
 
 This is a Python 3 project. It depends to the following libraries:
 
 * [PyQt5](http://www.riverbankcomputing.com/software/pyqt/intro)
 * [Mutagen](https://mutagen.readthedocs.org)
 
-#License
+License
+=======
 
     Copyright (c) 2017, Kostas Kokkoros
     
