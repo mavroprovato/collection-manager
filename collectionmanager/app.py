@@ -5,6 +5,7 @@ import PyQt5.Qt as Qt
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
+import collectionmanager.database as database
 import collectionmanager.ui.main_window as main_window
 
 
@@ -19,9 +20,15 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         """
         super(CollectionManagerApp, self).__init__(parent)
 
-        self.setupUi(self)
+        self.db = database.Database()
 
-        # Connect the application actions
+        self.setupUi(self)
+        self.setup_actions()
+
+    def setup_actions(self):
+        """
+        Set up the application actions.
+        """
         self.action_file_open.triggered.connect(self.open_directory)
         self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
 
@@ -30,7 +37,8 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         """
         directory = Qt.QFileDialog.getExistingDirectory(parent=self)
         if directory:
-            print(directory)
+            self.db.add_directory(directory)
+            self.db.save()
 
 
 def main():
