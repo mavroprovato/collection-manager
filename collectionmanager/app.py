@@ -1,6 +1,7 @@
 """
 The application module
 """
+import PyQt5.Qt as Qt
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
@@ -21,7 +22,15 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.setupUi(self)
 
         # Connect the application actions
-        self.actionQuit.triggered.connect(QtWidgets.qApp.quit)
+        self.action_file_open.triggered.connect(self.open_directory)
+        self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
+
+    def open_directory(self):
+        """Called when the user selects a directory to open.
+        """
+        directory = Qt.QFileDialog.getExistingDirectory(parent=self)
+        if directory:
+            print(directory)
 
 
 def main():
