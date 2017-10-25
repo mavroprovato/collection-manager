@@ -1,23 +1,21 @@
-import sys
 import PyQt5.QtWidgets as Widgets
+import sys
+
+import collectionmanager.ui.main_window as main_window
 
 
-class MainWindow(Widgets.QMainWindow):
-    def __init__(self):
-        super().__init__()
+class CollectionManagerApp(Widgets.QMainWindow, main_window.Ui_MainWindow):
+    def __init__(self, parent=None):
+        super(CollectionManagerApp, self).__init__(parent)
 
-        self.init_ui()
-
-    def init_ui(self):
-        self.setGeometry(300, 300, 250, 150)
-        self.setWindowTitle('Collection Manager')
-        self.show()
+        self.setupUi(self)
 
 
 def main():
     app = Widgets.QApplication(sys.argv)
-    ex = MainWindow()
-    sys.exit(app.exec_())
+    form = CollectionManagerApp()
+    form.show()
+    app.exec_()
 
 
 if __name__ == '__main__':

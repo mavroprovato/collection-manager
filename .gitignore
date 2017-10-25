@@ -4,3 +4,6 @@ __pycache__/
 
 # Pycharm project files
 .idea
+
+# Qt Designer Python files
+collectionmanager/ui/*.py
