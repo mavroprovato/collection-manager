@@ -2,11 +2,11 @@
 The application module
 """
 import PyQt5.Qt as Qt
+import PyQt5.QtSql as QtSql
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
 import collectionmanager.database as database
-import collectionmanager.resources
 import collectionmanager.ui.main_window as main_window
 
 
@@ -25,6 +25,7 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
         self.setupUi(self)
         self.setup_actions()
+        self.setup_data()
 
     def setup_actions(self):
         """
@@ -32,6 +33,16 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         """
         self.action_file_open.triggered.connect(self.open_directory)
         self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
+
+    def setup_data(self):
+        self.setCentralWidget(self.tableView)
+        db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+        db.setDatabaseName("/home/kostas/.collection-manager/db.sqlite")
+        db.open()
+
+        track_model = QtSql.QSqlQueryModel()
+        track_model.setQuery("SELECT * FROM file", db)
+        self.tableView.setModel(track_model)
 
     def open_directory(self):
         """Called when the user selects a directory to open.

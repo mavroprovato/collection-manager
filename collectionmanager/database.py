@@ -91,7 +91,7 @@ class Database:
         cursor = self.conn.cursor()
         try:
             cursor.execute("""
-                INSERT INTO path(directory_id, relative_path, file_name) VALUES (?, ?, ?)
+                INSERT INTO file(directory_id, relative_path, file_name) VALUES (?, ?, ?)
             """, (directory_id, relative_path, file_name))
         finally:
             cursor.close()

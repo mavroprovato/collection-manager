@@ -5,7 +5,7 @@ CREATE TABLE directory (
     path TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE path (
+CREATE TABLE file (
     id INTEGER PRIMARY KEY,
     directory_id INTEGER,
     relative_path TEXT NOT NULL,
