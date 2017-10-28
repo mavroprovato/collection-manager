@@ -1,9 +1,11 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
 
 # Pycharm project files
 .idea
 
 # Qt Designer Python files
 collectionmanager/ui/*.py
+
+# Qt Resources Python files
+collectionmanager/resources/*.py

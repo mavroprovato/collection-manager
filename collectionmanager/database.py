@@ -5,25 +5,6 @@ import sqlite3
 # The file name of the database that holds the track information.
 DB_FILENAME = os.path.expanduser('~/.collection-manager/db.sqlite')
 
-# The create scripts for the database.
-CREATE_DDL = (
-    """
-    CREATE TABLE directory (
-        id INTEGER PRIMARY KEY,
-        path TEXT NOT NULL UNIQUE
-    )
-    """,
-    """
-    CREATE TABLE path (
-        id INTEGER PRIMARY KEY,
-        directory_id INTEGER,
-        relative_path TEXT NOT NULL,
-        file_name TEXT NOT NULL,
-        FOREIGN KEY(directory_id) REFERENCES directory(id) ON DELETE CASCADE
-    )
-    """,
-)
-
 
 class Database:
     """
@@ -46,9 +27,15 @@ class Database:
             # Make sure the parent directory exists
             if not db_file.parent.exists():
                 db_file.parent.mkdir()
+
             # Create the database
             conn = sqlite3.connect(str(db_file))
-            Database.create_schema(conn)
+            try:
+                Database.create_schema(conn)
+            except Exception:
+                # Creation failed, delete the file
+                os.remove(str(db_file))
+                raise
         else:
             # File exists, create a connection
             conn = sqlite3.connect(str(db_file))
@@ -63,8 +50,16 @@ class Database:
         """
         cursor = conn.cursor()
         try:
-            for ddl in CREATE_DDL:
-                cursor.execute(ddl)
+            with open(os.path.join(os.path.dirname(__file__), 'resources/db_schema.sql')) as f:
+                current_sql = ''
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('--'):
+                        continue
+                    current_sql += line
+                    if line[-1] == ';':
+                        cursor.execute(current_sql)
+                        current_sql = ''
         finally:
             cursor.close()
 

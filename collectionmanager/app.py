@@ -6,6 +6,7 @@ import PyQt5.QtWidgets as QtWidgets
 import sys
 
 import collectionmanager.database as database
+import collectionmanager.resources
 import collectionmanager.ui.main_window as main_window
 
 
