@@ -10,12 +10,22 @@ CREATE TABLE artist (
     name TEXT NOT NULL UNIQUE
 );
 
+CREATE TABLE album (
+    id INTEGER PRIMARY KEY,
+    artist_id INTEGER,
+    name TEXT,
+    year INTEGER,
+    FOREIGN KEY(artist_id) REFERENCES artist(id) ON DELETE CASCADE
+);
+
 CREATE TABLE file (
     id INTEGER PRIMARY KEY,
     directory_id INTEGER,
-    artist_id INTEGER,
+    album_id INTEGER,
     relative_path TEXT NOT NULL,
     file_name TEXT NOT NULL,
+    track_number INTEGER,
+    track_name TEXT,
     FOREIGN KEY(directory_id) REFERENCES directory(id) ON DELETE CASCADE,
-    FOREIGN KEY(artist_id) REFERENCES artist(id) ON DELETE CASCADE
+    FOREIGN KEY(album_id) REFERENCES album(id) ON DELETE CASCADE
 );

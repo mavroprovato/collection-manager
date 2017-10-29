@@ -91,12 +91,13 @@ class Database:
         cursor = self.conn.cursor()
         try:
             id3 = mutagen.id3.ID3(os.path.join(directory, relative_path, file_name))
+            print(id3)
 
             # Get the artist
-            artist = None
             if id3.getall('TPE1'):
                 artist = str(id3.getall('TPE1')[0])
-
+            else:
+                artist = None
             cursor.execute("SELECT id FROM artist WHERE name = ?", (artist, ))
             artist_id = cursor.fetchone()
             if artist_id is None:
@@ -105,8 +106,49 @@ class Database:
             else:
                 artist_id = artist_id[0]
 
-            cursor.execute("INSERT INTO file(directory_id, artist_id, relative_path, file_name) VALUES (?, ?, ?, ?)",
-                           (directory_id, artist_id, relative_path, file_name))
+            # Get the album name
+            if id3.getall('TIT2'):
+                album_name = str(id3.getall('TIT2')[0])
+            else:
+                album_name = None
+            # Get the year
+            if id3.getall('TDRC'):
+                track_year = int(str(id3.getall('TDRC')[0]))
+            else:
+                track_year = None
+            cursor.execute("SELECT id FROM album WHERE name = ? AND artist_id = ?", (album_name, artist_id))
+            album_id = cursor.fetchone()
+            if album_id is None:
+                cursor.execute("""
+                    INSERT INTO album(artist_id, name, year) VALUES (?, ?, ?)
+                """, (artist_id, album_name, track_year))
+                album_id = cursor.lastrowid
+            else:
+                album_id = album_id[0]
+
+            # Get the track name
+            if id3.getall('TIT2'):
+                track_name = str(id3.getall('TIT2')[0])
+            else:
+                track_name = None
+
+            # Get the track number
+            if id3.getall('TRCK'):
+                try:
+                    track_number = int(str(id3.getall('TRCK')[0]))
+                except ValueError:
+                    track_number = None
+            else:
+                track_number = None
+
+            # Insert the file information
+            cursor.execute(
+                """
+                  INSERT INTO file(directory_id, album_id, relative_path, file_name, track_number, track_name)
+                  VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (directory_id, album_id, relative_path, file_name, track_number, track_name)
+            )
         finally:
             cursor.close()
 

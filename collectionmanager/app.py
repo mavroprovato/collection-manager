@@ -22,8 +22,12 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         super(CollectionManagerApp, self).__init__(parent)
 
         self.db = database.Database()
+        self.setup_ui()
 
-        self.setupUi(self)
+    def setup_ui(self):
+        super(CollectionManagerApp, self).setupUi(self)
+
+        self.setCentralWidget(self.tableView)
         self.setup_actions()
         self.setup_data()
 
@@ -35,16 +39,16 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
 
     def setup_data(self):
-        self.setCentralWidget(self.tableView)
         db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
         db.setDatabaseName(database.DB_FILENAME)
         db.open()
 
         track_model = QtSql.QSqlQueryModel()
         track_model.setQuery("""
-            SELECT a.name, f.relative_path, f.file_name
+            SELECT al.name AS album, ar.name AS artist, f.track_number, f.track_name, f.relative_path, f.file_name
             FROM file f
-            JOIN artist a ON a.id = f.artist_id
+            JOIN album al ON al.id = f.album_id
+            JOIN artist ar ON ar.id = al.artist_id
         """, db)
         self.tableView.setModel(track_model)
 
@@ -55,6 +59,7 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         if directory:
             self.db.add_directory(directory)
             self.db.save()
+            self.setup_data()
 
 
 def main():
