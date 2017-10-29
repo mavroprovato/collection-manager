@@ -37,11 +37,15 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     def setup_data(self):
         self.setCentralWidget(self.tableView)
         db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
-        db.setDatabaseName("/home/kostas/.collection-manager/db.sqlite")
+        db.setDatabaseName(database.DB_FILENAME)
         db.open()
 
         track_model = QtSql.QSqlQueryModel()
-        track_model.setQuery("SELECT * FROM file", db)
+        track_model.setQuery("""
+            SELECT a.name, f.relative_path, f.file_name
+            FROM file f
+            JOIN artist a ON a.id = f.artist_id
+        """, db)
         self.tableView.setModel(track_model)
 
     def open_directory(self):

@@ -1,4 +1,5 @@
 import os.path
+import mutagen.id3
 import pathlib
 import sqlite3
 
@@ -71,28 +72,41 @@ class Database:
         cursor = self.conn.cursor()
         try:
             # Insert the directory
-            cursor.execute("""
-              INSERT INTO directory(path) VALUES (?)
-            """, (directory, ))
+            cursor.execute("INSERT INTO directory(path) VALUES (?)", (directory, ))
             directory_id = cursor.lastrowid
             # Scan the directory for files
             for root, relative_path, file_name in Database._scan_directory(directory):
-                self.process_file(directory_id, file_name, relative_path)
+                self.process_file(directory_id, directory, relative_path, file_name)
         finally:
             cursor.close()
 
-    def process_file(self, directory_id, file_name, relative_path):
+    def process_file(self, directory_id, directory, relative_path, file_name):
         """Process a file.
 
         :param directory_id: The identifier of the root directory.
+        :param directory:
         :param relative_path: The path of the file relative to the root directory.
         :param file_name: The file name.
         """
         cursor = self.conn.cursor()
         try:
-            cursor.execute("""
-                INSERT INTO file(directory_id, relative_path, file_name) VALUES (?, ?, ?)
-            """, (directory_id, relative_path, file_name))
+            id3 = mutagen.id3.ID3(os.path.join(directory, relative_path, file_name))
+
+            # Get the artist
+            artist = None
+            if id3.getall('TPE1'):
+                artist = str(id3.getall('TPE1')[0])
+
+            cursor.execute("SELECT id FROM artist WHERE name = ?", (artist, ))
+            artist_id = cursor.fetchone()
+            if artist_id is None:
+                cursor.execute("INSERT INTO artist(name) VALUES (?)", (artist, ))
+                artist_id = cursor.lastrowid
+            else:
+                artist_id = artist_id[0]
+
+            cursor.execute("INSERT INTO file(directory_id, artist_id, relative_path, file_name) VALUES (?, ?, ?, ?)",
+                           (directory_id, artist_id, relative_path, file_name))
         finally:
             cursor.close()
 
