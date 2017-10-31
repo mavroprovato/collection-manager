@@ -1,3 +1,4 @@
+import logging
 import os.path
 import mutagen.id3
 import pathlib
@@ -75,8 +76,10 @@ class Database:
             cursor.execute("INSERT INTO directory(path) VALUES (?)", (directory, ))
             directory_id = cursor.lastrowid
             # Scan the directory for files
+            logging.info('Scanning directory %s', directory)
             for root, relative_path, file_name in Database._scan_directory(directory):
                 self.process_file(directory_id, directory, relative_path, file_name)
+            logging.info('Scanning directory %s finished', directory)
         finally:
             cursor.close()
 
@@ -90,9 +93,8 @@ class Database:
         """
         cursor = self.conn.cursor()
         try:
+            logging.info('Processing file %s/%s', relative_path, file_name)
             id3 = mutagen.id3.ID3(os.path.join(directory, relative_path, file_name))
-            print(id3)
-
             # Get the artist
             if id3.getall('TPE1'):
                 artist = str(id3.getall('TPE1')[0])
@@ -107,8 +109,8 @@ class Database:
                 artist_id = artist_id[0]
 
             # Get the album name
-            if id3.getall('TIT2'):
-                album_name = str(id3.getall('TIT2')[0])
+            if id3.getall('TALB'):
+                album_name = str(id3.getall('TALB')[0])
             else:
                 album_name = None
             # Get the year
