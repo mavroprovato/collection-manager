@@ -78,12 +78,31 @@ class Database:
             # Scan the directory for files
             logging.info('Scanning directory %s', directory)
             for root, relative_path, file_name in Database._scan_directory(directory):
-                self.process_file(directory_id, directory, relative_path, file_name)
+                self._process_file(directory_id, directory, relative_path, file_name)
             logging.info('Scanning directory %s finished', directory)
         finally:
             cursor.close()
 
-    def process_file(self, directory_id, directory, relative_path, file_name):
+    def save(self):
+        """Save the changes to the database
+        """
+        self.conn.commit()
+
+    def track_data(self):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT ar.name, al.name, t.name
+                FROM track t
+                JOIN album al ON al.id = t.album_id
+                JOIN artist ar ON ar.id = al.artist_id
+            """)
+
+            return list(cursor)
+        finally:
+            cursor.close()
+
+    def _process_file(self, directory_id, directory, relative_path, file_name):
         """Process a file.
 
         :param directory_id: The identifier of the root directory.
@@ -146,18 +165,13 @@ class Database:
             # Insert the file information
             cursor.execute(
                 """
-                  INSERT INTO file(directory_id, album_id, relative_path, file_name, track_number, track_name)
+                  INSERT INTO track(directory_id, album_id, name, number, relative_path, file_name)
                   VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (directory_id, album_id, relative_path, file_name, track_number, track_name)
             )
         finally:
             cursor.close()
-
-    def save(self):
-        """Save the changes to the database
-        """
-        self.conn.commit()
 
     @staticmethod
     def _scan_directory(directory):

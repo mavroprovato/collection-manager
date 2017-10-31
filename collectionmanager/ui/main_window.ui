@@ -14,13 +14,13 @@
    <string>Collection Manager</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTableView" name="tableView">
+   <widget class="QTableWidget" name="tableWidget">
     <property name="geometry">
      <rect>
-      <x>-5</x>
-      <y>-9</y>
-      <width>1001</width>
-      <height>571</height>
+      <x>5</x>
+      <y>21</y>
+      <width>971</width>
+      <height>521</height>
      </rect>
     </property>
    </widget>

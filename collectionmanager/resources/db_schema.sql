@@ -18,14 +18,14 @@ CREATE TABLE album (
     FOREIGN KEY(artist_id) REFERENCES artist(id) ON DELETE CASCADE
 );
 
-CREATE TABLE file (
+CREATE TABLE track (
     id INTEGER PRIMARY KEY,
     directory_id INTEGER,
     album_id INTEGER,
+    name TEXT,
+    number INTEGER,
     relative_path TEXT NOT NULL,
     file_name TEXT NOT NULL,
-    track_number INTEGER,
-    track_name TEXT,
     FOREIGN KEY(directory_id) REFERENCES directory(id) ON DELETE CASCADE,
     FOREIGN KEY(album_id) REFERENCES album(id) ON DELETE CASCADE
 );
