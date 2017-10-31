@@ -9,6 +9,8 @@ import sys
 import collectionmanager.database as database
 import collectionmanager.ui.main_window as main_window
 
+app = None
+
 
 class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     """
@@ -66,6 +68,7 @@ def main():
     """
     The main entry point of the application.
     """
+    global app
     app = QtWidgets.QApplication(sys.argv)
     form = CollectionManagerApp()
     form.show()
