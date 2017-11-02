@@ -73,10 +73,10 @@ class Database:
         cursor = self.conn.cursor()
         try:
             # Insert the directory
+            logging.info('Scanning directory %s', directory)
             cursor.execute("INSERT INTO directory(path) VALUES (?)", (directory, ))
             directory_id = cursor.lastrowid
             # Scan the directory for files
-            logging.info('Scanning directory %s', directory)
             for root, relative_path, file_name in Database._scan_directory(directory):
                 self._process_file(directory_id, directory, relative_path, file_name)
             logging.info('Scanning directory %s finished', directory)
@@ -112,7 +112,7 @@ class Database:
         """
         cursor = self.conn.cursor()
         try:
-            logging.info('Processing file %s/%s', relative_path, file_name)
+            logging.debug('Processing file %s/%s', relative_path, file_name)
             id3 = mutagen.id3.ID3(os.path.join(directory, relative_path, file_name))
             # Get the artist
             if id3.getall('TPE1'):
@@ -170,6 +170,7 @@ class Database:
                 """,
                 (directory_id, album_id, relative_path, file_name, track_number, track_name)
             )
+            logging.debug('Processing file %s/%s finished', relative_path, file_name)
         finally:
             cursor.close()
 
