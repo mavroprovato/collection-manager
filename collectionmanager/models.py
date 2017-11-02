@@ -7,7 +7,8 @@ class TrackModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, db):
         super(TrackModel, self).__init__(parent)
 
-        self.model_data = db.track_data()
+        self.db = db
+        self.model_data = []
 
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.model_data)
@@ -22,3 +23,7 @@ class TrackModel(QtCore.QAbstractTableModel):
     def data(self, index, role=None):
         if role == QtCore.Qt.DisplayRole:
             return self.model_data[index.row()][index.column()]
+
+    def refresh(self):
+        self.model_data = self.db.track_data()
+        self.modelReset.emit()

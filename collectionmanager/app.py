@@ -34,6 +34,7 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
 
         self.tableView.setModel(self.track_model)
+        self.track_model.refresh()
 
     def open_directory(self):
         """Called when the user selects a directory to open.
@@ -42,13 +43,13 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         if directory:
             self.db.add_directory(directory)
             self.db.save()
+            self.track_model.refresh()
 
 
 def main():
     """
     The main entry point of the application.
     """
-    # global app
     app = QtWidgets.QApplication(sys.argv)
     form = CollectionManagerApp()
     form.show()
