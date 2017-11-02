@@ -9,8 +9,6 @@ import collectionmanager.database as database
 import collectionmanager.models as models
 import collectionmanager.ui.main_window as main_window
 
-app = None
-
 
 class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     """
@@ -50,11 +48,11 @@ def main():
     """
     The main entry point of the application.
     """
-    global app
+    # global app
     app = QtWidgets.QApplication(sys.argv)
     form = CollectionManagerApp()
     form.show()
-    app.exec_()
+    sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
