@@ -4,26 +4,22 @@ import mutagen.id3
 import pathlib
 import sqlite3
 
-# The file name of the database that holds the track information.
-DB_FILENAME = os.path.expanduser('~/.collection-manager/db.sqlite')
-
 
 class Database:
+    """The track database
     """
-    The song database
-    """
-    def __init__(self):
+    def __init__(self, config_dir):
         """Constructor for the database object.
         """
-        self.conn = Database.__create_connection()
+        self.conn = Database.__create_connection(config_dir)
 
     @staticmethod
-    def __create_connection():
+    def __create_connection(config_dir):
         """Create the connection to the database that holds the music library information.
 
         :return: The database connection.
         """
-        db_file = pathlib.Path(DB_FILENAME)
+        db_file = pathlib.Path(config_dir, 'db.sqlite')
         # Check if the file exists
         if not db_file.exists():
             # Make sure the parent directory exists

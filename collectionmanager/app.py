@@ -2,6 +2,7 @@
 The application module
 """
 import PyQt5.Qt as Qt
+import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
@@ -10,7 +11,7 @@ import collectionmanager.models as models
 import collectionmanager.ui.main_window as main_window
 
 
-class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     """
     The application class
     """
@@ -19,14 +20,16 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
         :param parent: The parent window.
         """
-        super(CollectionManagerApp, self).__init__(parent)
+        super(MainWindow, self).__init__(parent)
 
-        self.db = database.Database()
+        self.db = database.Database(QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation))
         self.track_model = models.TrackModel(self, self.db)
         self.setup_ui()
 
     def setup_ui(self):
-        super(CollectionManagerApp, self).setupUi(self)
+        """Set up the user interface.
+        """
+        super(MainWindow, self).setupUi(self)
 
         self.setCentralWidget(self.tableView)
 
@@ -47,12 +50,12 @@ class CollectionManagerApp(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
 
 def main():
-    """
-    The main entry point of the application.
+    """The main entry point of the application.
     """
     app = QtWidgets.QApplication(sys.argv)
-    form = CollectionManagerApp()
-    form.show()
+    app.setApplicationName('collection-manager')
+    window = MainWindow()
+    window.show()
     sys.exit(app.exec_())
 
 
