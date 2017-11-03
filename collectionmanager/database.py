@@ -27,7 +27,7 @@ class Database:
                 db_file.parent.mkdir()
 
             # Create the database
-            conn = sqlite3.connect(str(db_file))
+            conn = sqlite3.connect(str(db_file), check_same_thread=False)
             try:
                 Database._create_schema(conn)
             except Exception:
@@ -36,7 +36,7 @@ class Database:
                 raise
         else:
             # File exists, create a connection
-            conn = sqlite3.connect(str(db_file))
+            conn = sqlite3.connect(str(db_file), check_same_thread=False)
 
         return conn
 

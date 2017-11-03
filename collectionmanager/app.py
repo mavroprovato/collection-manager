@@ -37,6 +37,28 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         self.trackModel.refresh()
 
 
+class ScanDirectoryThread(QtCore.QThread):
+    directoryScanned = QtCore.pyqtSignal()
+
+    def __init__(self, parent, db):
+        super(ScanDirectoryThread, self).__init__(parent)
+
+        self.db = db
+        self.directory = None
+
+    def scan_directory(self, directory):
+        self.directory = directory
+
+        if not self.isRunning():
+            self.start()
+
+    def run(self):
+        self.db.add_directory(self.directory)
+        self.db.save()
+
+        self.directoryScanned.emit()
+
+
 class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     """The main application window
     """
@@ -49,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
 
         self.db = database.Database(QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation))
         self.mainWidget = MainWidget(self, self.db)
+        self.scanDirectoryThread = ScanDirectoryThread(self, self.db)
 
         self.setupUi()
 
@@ -64,14 +87,17 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         self.fileOpenAction.triggered.connect(self.open_directory)
         self.fileQuitAction.triggered.connect(QtWidgets.qApp.quit)
 
+        self.scanDirectoryThread.directoryScanned.connect(self.directory_scanned)
+
     def open_directory(self):
         """Called when the user selects a directory to open.
         """
         directory = Qt.QFileDialog.getExistingDirectory(parent=self)
         if directory:
-            self.db.add_directory(directory)
-            self.db.save()
-            self.mainWidget.trackModel.refresh()
+            self.scanDirectoryThread.scan_directory(directory)
+
+    def directory_scanned(self):
+        self.mainWidget.trackModel.refresh()
 
 
 def main():
