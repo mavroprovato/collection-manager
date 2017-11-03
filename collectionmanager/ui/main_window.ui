@@ -13,21 +13,7 @@
   <property name="windowTitle">
    <string>Collection Manager</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <widget class="QTableView" name="trackTableView">
-    <property name="geometry">
-     <rect>
-      <x>5</x>
-      <y>1</y>
-      <width>971</width>
-      <height>541</height>
-     </rect>
-    </property>
-    <property name="selectionBehavior">
-     <enum>QAbstractItemView::SelectRows</enum>
-    </property>
-   </widget>
-  </widget>
+  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
