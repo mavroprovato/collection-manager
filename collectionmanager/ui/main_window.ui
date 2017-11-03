@@ -41,14 +41,14 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <addaction name="action_file_open"/>
+    <addaction name="fileOpenAction"/>
     <addaction name="separator"/>
-    <addaction name="action_file_quit"/>
+    <addaction name="fileQuitAction"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_file_quit">
+  <action name="fileQuitAction">
    <property name="text">
     <string>&amp;Quit</string>
    </property>
@@ -56,7 +56,7 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="action_file_open">
+  <action name="fileOpenAction">
    <property name="text">
     <string>&amp;Open</string>
    </property>

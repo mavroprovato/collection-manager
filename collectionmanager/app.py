@@ -23,21 +23,23 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         super(MainWindow, self).__init__(parent)
 
         self.db = database.Database(QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation))
-        self.track_model = models.TrackModel(self, self.db)
-        self.setup_ui()
+        self.trackModel = models.TrackModel(self, self.db)
+        self.setupUi()
 
-    def setup_ui(self):
+    def setupUi(self, **kwargs):
         """Set up the user interface.
+
+        :param kwargs: Keyword arguments.
         """
         super(MainWindow, self).setupUi(self)
 
         self.setCentralWidget(self.trackTableView)
 
-        self.action_file_open.triggered.connect(self.open_directory)
-        self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
+        self.fileOpenAction.triggered.connect(self.open_directory)
+        self.fileQuitAction.triggered.connect(QtWidgets.qApp.quit)
 
-        self.trackTableView.setModel(self.track_model)
-        self.track_model.refresh()
+        self.trackTableView.setModel(self.trackModel)
+        self.trackModel.refresh()
 
     def open_directory(self):
         """Called when the user selects a directory to open.
@@ -46,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         if directory:
             self.db.add_directory(directory)
             self.db.save()
-            self.track_model.refresh()
+            self.trackModel.refresh()
 
 
 def main():

@@ -11,10 +11,10 @@ class Database:
     def __init__(self, config_dir):
         """Constructor for the database object.
         """
-        self.conn = Database.__create_connection(config_dir)
+        self.conn = Database._create_connection(config_dir)
 
     @staticmethod
-    def __create_connection(config_dir):
+    def _create_connection(config_dir):
         """Create the connection to the database that holds the music library information.
 
         :return: The database connection.
@@ -29,7 +29,7 @@ class Database:
             # Create the database
             conn = sqlite3.connect(str(db_file))
             try:
-                Database.create_schema(conn)
+                Database._create_schema(conn)
             except Exception:
                 # Creation failed, delete the file
                 os.remove(str(db_file))
@@ -41,7 +41,7 @@ class Database:
         return conn
 
     @staticmethod
-    def create_schema(conn):
+    def _create_schema(conn):
         """Create the database schema.
 
         :param conn: The database connection.
