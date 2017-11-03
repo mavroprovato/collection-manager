@@ -10,6 +10,20 @@ import collectionmanager.database as database
 import collectionmanager.models as models
 import collectionmanager.ui.main_window as main_window
 import collectionmanager.ui.main_widget as main_widget
+import collectionmanager.ui.track_details as track_details
+
+
+class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
+    """The dialog that enables editing of track details.
+    """
+    def __init__(self, parent):
+        """Constructor for the track detail dialog.
+
+        :param parent: The parent widget.
+        """
+        super(TrackDetailDialog, self).__init__(parent)
+
+        self.setupUi(self)
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
@@ -18,11 +32,12 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
     def __init__(self, parent, db):
         """Constructor for the main application window.
 
-        :param parent: The parent window.
+        :param parent: The parent widget.
         """
         super(MainWidget, self).__init__(parent)
 
         self.trackModel = models.TrackModel(self, db)
+        self.trackDetailsDialog = TrackDetailDialog(self)
 
         self.setupUi()
 
@@ -34,7 +49,11 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         super(MainWidget, self).setupUi(self)
 
         self.trackTableView.setModel(self.trackModel)
+        self.trackTableView.doubleClicked.connect(self.track_table_double_clicked)
         self.trackModel.refresh()
+
+    def track_table_double_clicked(self, index):
+        self.trackDetailsDialog.exec_()
 
 
 class ScanDirectoryThread(QtCore.QThread):
@@ -65,7 +84,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     def __init__(self, parent=None):
         """Constructor for the main application window.
 
-        :param parent: The parent window.
+        :param parent: The parent widget.
         """
         super(MainWindow, self).__init__(parent)
 
