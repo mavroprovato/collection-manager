@@ -31,12 +31,12 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         """
         super(MainWindow, self).setupUi(self)
 
-        self.setCentralWidget(self.tableView)
+        self.setCentralWidget(self.trackTableView)
 
         self.action_file_open.triggered.connect(self.open_directory)
         self.action_file_quit.triggered.connect(QtWidgets.qApp.quit)
 
-        self.tableView.setModel(self.track_model)
+        self.trackTableView.setModel(self.track_model)
         self.track_model.refresh()
 
     def open_directory(self):

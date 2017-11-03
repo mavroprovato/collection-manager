@@ -14,14 +14,17 @@
    <string>Collection Manager</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableView" name="trackTableView">
     <property name="geometry">
      <rect>
       <x>5</x>
-      <y>21</y>
+      <y>1</y>
       <width>971</width>
-      <height>521</height>
+      <height>541</height>
      </rect>
+    </property>
+    <property name="selectionBehavior">
+     <enum>QAbstractItemView::SelectRows</enum>
     </property>
    </widget>
   </widget>
@@ -31,7 +34,7 @@
      <x>0</x>
      <y>0</y>
      <width>981</width>
-     <height>32</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
