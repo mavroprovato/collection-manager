@@ -113,6 +113,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>titleLineEdit</tabstop>
+  <tabstop>artistLineEdit</tabstop>
+  <tabstop>albumArtistEdit</tabstop>
+  <tabstop>albumLineEdit</tabstop>
+  <tabstop>trackNumberLineEdit</tabstop>
+  <tabstop>yearLineEdit</tabstop>
+  <tabstop>diskNumberLineEdit</tabstop>
+  <tabstop>genreEdit</tabstop>
+  <tabstop>plainTextEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
