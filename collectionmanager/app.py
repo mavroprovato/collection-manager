@@ -23,7 +23,12 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         """
         super(TrackDetailDialog, self).__init__(parent)
 
-        self.setupUi(self)
+        self.setupUi()
+
+    def setupUi(self, **kwargs):
+        super(TrackDetailDialog, self).setupUi(self)
+
+        self.buttonBox.rejected.connect(self.close)
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
