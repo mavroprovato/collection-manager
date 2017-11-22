@@ -1,8 +1,9 @@
 import logging
 import os.path
-import mutagen.id3
 import pathlib
 import sqlite3
+
+import collectionmanager.track_info as track_info
 
 
 class Database:
@@ -109,54 +110,28 @@ class Database:
         cursor = self.conn.cursor()
         try:
             logging.debug('Processing file %s/%s', relative_path, file_name)
-            id3 = mutagen.id3.ID3(os.path.join(directory, relative_path, file_name))
-            # Get the artist
-            if id3.getall('TPE1'):
-                artist = str(id3.getall('TPE1')[0])
-            else:
-                artist = None
-            cursor.execute("SELECT id FROM artist WHERE name = ?", (artist, ))
+            file_path = os.path.join(directory, relative_path, file_name)
+            track = track_info.TrackInfo(file_path)
+
+            # Save the artist
+            cursor.execute("SELECT id FROM artist WHERE name = ?", (track.artist, ))
             artist_id = cursor.fetchone()
             if artist_id is None:
-                cursor.execute("INSERT INTO artist(name) VALUES (?)", (artist, ))
+                cursor.execute("INSERT INTO artist(name) VALUES (?)", (track.artist, ))
                 artist_id = cursor.lastrowid
             else:
                 artist_id = artist_id[0]
 
-            # Get the album name
-            if id3.getall('TALB'):
-                album_name = str(id3.getall('TALB')[0])
-            else:
-                album_name = None
-            # Get the year
-            if id3.getall('TDRC'):
-                track_year = int(str(id3.getall('TDRC')[0]))
-            else:
-                track_year = None
-            cursor.execute("SELECT id FROM album WHERE name = ? AND artist_id = ?", (album_name, artist_id))
+            # Save the album
+            cursor.execute("SELECT id FROM album WHERE name = ? AND artist_id = ?", (track.album, artist_id))
             album_id = cursor.fetchone()
             if album_id is None:
                 cursor.execute("""
                     INSERT INTO album(artist_id, name, year) VALUES (?, ?, ?)
-                """, (artist_id, album_name, track_year))
+                """, (artist_id, track.album, track.year))
                 album_id = cursor.lastrowid
             else:
                 album_id = album_id[0]
-
-            # Get the track name
-            if id3.getall('TIT2'):
-                track_name = str(id3.getall('TIT2')[0])
-            else:
-                track_name = None
-
-            # Get the track number
-            if id3.getall('TRCK'):
-                try:
-                    track_number = int(str(id3.getall('TRCK')[0]))
-                except ValueError:
-                    track_number = None
-            else:
-                track_number = None
 
             # Insert the file information
             cursor.execute(
@@ -164,7 +139,7 @@ class Database:
                   INSERT INTO track(directory_id, album_id, name, number, relative_path, file_name)
                   VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (directory_id, album_id, relative_path, file_name, track_number, track_name)
+                (directory_id, album_id, track.name, track.number, relative_path, file_name)
             )
             logging.debug('Processing file %s/%s finished', relative_path, file_name)
         finally:
