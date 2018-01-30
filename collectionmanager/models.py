@@ -1,3 +1,4 @@
+import os
 import PyQt5.QtCore as QtCore
 
 
@@ -36,3 +37,13 @@ class TrackModel(QtCore.QAbstractTableModel):
         """
         self.modelData = self.db.track_data()
         self.modelReset.emit()
+
+    def file_path_for(self, index):
+        """Return the file path for the track at the specified index.
+
+        :param index: The model index.
+        :return: The file path for the track.
+        """
+        row_data = self.modelData[index.row()]
+
+        return os.path.join(row_data[0], row_data[1])

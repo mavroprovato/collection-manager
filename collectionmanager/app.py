@@ -30,6 +30,10 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
 
         self.buttonBox.rejected.connect(self.close)
 
+    def set_file_path(self, file_path):
+        # TODO: Load the fields from the file
+        pass
+
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
     """The main application widget
@@ -58,6 +62,12 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         self.trackModel.refresh()
 
     def track_table_double_clicked(self, index):
+        """Called when the track table is double clicked.
+
+        :param index: The model index.
+        """
+        file_path = self.trackModel.file_path_for(index)
+        self.trackDetailsDialog.set_file_path(file_path)
         self.trackDetailsDialog.exec_()
 
 
