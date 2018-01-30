@@ -89,8 +89,10 @@ class Database:
         cursor = self.conn.cursor()
         try:
             cursor.execute("""
-                SELECT ar.name, al.name, t.name
+                SELECT d.path AS directory_path, t.file_name, ar.name AS artist_name, al.name AS album_name,
+                       t.name AS track_name
                 FROM track t
+                JOIN directory d ON t.directory_id = d.id
                 JOIN album al ON al.id = t.album_id
                 JOIN artist ar ON ar.id = al.artist_id
             """)
@@ -109,7 +111,7 @@ class Database:
         """
         cursor = self.conn.cursor()
         try:
-            logging.debug('Processing file %s/%s', relative_path, file_name)
+            logging.debug('Processing file %s', os.path.join(relative_path, file_name))
             file_path = os.path.join(directory, relative_path, file_name)
             track = track_info.TrackInfo(file_path)
 
@@ -136,12 +138,12 @@ class Database:
             # Insert the file information
             cursor.execute(
                 """
-                  INSERT INTO track(directory_id, album_id, name, number, relative_path, file_name)
-                  VALUES (?, ?, ?, ?, ?, ?)
+                  INSERT INTO track(directory_id, album_id, name, number, file_name)
+                  VALUES (?, ?, ?, ?, ?)
                 """,
-                (directory_id, album_id, track.name, track.number, relative_path, file_name)
+                (directory_id, album_id, track.name, track.number, os.path.join(relative_path, file_name))
             )
-            logging.debug('Processing file %s/%s finished', relative_path, file_name)
+            logging.debug('Processing file %s/%s finished', os.path.join(relative_path, file_name))
         finally:
             cursor.close()
 

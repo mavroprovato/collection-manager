@@ -2,9 +2,16 @@ import PyQt5.QtCore as QtCore
 
 
 class TrackModel(QtCore.QAbstractTableModel):
-    columns = ['Artist', 'Album', 'Track']
+    """The table model for track data.
+    """
+    columns = ['Directory', 'File Name', 'Artist', 'Album', 'Track']
 
     def __init__(self, parent, db):
+        """Create the track table model.
+
+        :param parent: The parent window.
+        :param db: The track database.
+        """
         super(TrackModel, self).__init__(parent)
 
         self.db = db
@@ -25,5 +32,7 @@ class TrackModel(QtCore.QAbstractTableModel):
             return self.modelData[index.row()][index.column()]
 
     def refresh(self):
+        """Refresh the model.
+        """
         self.modelData = self.db.track_data()
         self.modelReset.emit()

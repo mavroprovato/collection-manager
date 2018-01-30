@@ -57,7 +57,7 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         self.trackTableView.doubleClicked.connect(self.track_table_double_clicked)
         self.trackModel.refresh()
 
-    def track_table_double_clicked(self):
+    def track_table_double_clicked(self, index):
         self.trackDetailsDialog.exec_()
 
 

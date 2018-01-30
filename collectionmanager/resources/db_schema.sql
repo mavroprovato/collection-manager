@@ -24,7 +24,6 @@ CREATE TABLE track (
     album_id INTEGER,
     name TEXT,
     number INTEGER,
-    relative_path TEXT NOT NULL,
     file_name TEXT NOT NULL,
     FOREIGN KEY(directory_id) REFERENCES directory(id) ON DELETE CASCADE,
     FOREIGN KEY(album_id) REFERENCES album(id) ON DELETE CASCADE
