@@ -103,7 +103,7 @@ class Database:
         """Process a file.
 
         :param directory_id: The identifier of the root directory.
-        :param directory:
+        :param directory: The directory to add.
         :param relative_path: The path of the file relative to the root directory.
         :param file_name: The file name.
         """
