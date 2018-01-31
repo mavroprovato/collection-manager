@@ -11,6 +11,7 @@ import collectionmanager.models as models
 import collectionmanager.ui.main_window as main_window
 import collectionmanager.ui.main_widget as main_widget
 import collectionmanager.ui.track_details as track_details
+import collectionmanager.track_info as track_info
 
 
 class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
@@ -31,8 +32,12 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.buttonBox.rejected.connect(self.close)
 
     def set_file_path(self, file_path):
-        # TODO: Load the fields from the file
-        pass
+        info = track_info.TrackInfo(file_path)
+        self.nameLineEdit.setText(info.name)
+        self.artistLineEdit.setText(info.artist)
+        self.albumLineEdit.setText(info.album)
+        self.yearLineEdit.setText(str(info.year))
+        self.trackNumberLineEdit.setText(str(info.track_number))
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
