@@ -90,7 +90,7 @@ class Database:
         try:
             cursor.execute("""
                 SELECT d.path AS directory_path, t.file_name, ar.name AS artist_name, al.name AS album_name,
-                       t.name AS track_name
+                       t.number, t.name AS track_name
                 FROM track t
                 JOIN directory d ON t.directory_id = d.id
                 JOIN album al ON al.id = t.album_id

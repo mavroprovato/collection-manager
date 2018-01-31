@@ -27,11 +27,19 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.setupUi()
 
     def setupUi(self, **kwargs):
+        """Set up the user interface.
+
+        :param kwargs:
+        """
         super(TrackDetailDialog, self).setupUi(self)
 
         self.buttonBox.rejected.connect(self.close)
 
-    def set_file_path(self, file_path):
+    def set_file(self, file_path):
+        """Set the dialog information from a file.
+
+        :param file_path: The file path.
+        """
         info = track_info.TrackInfo(file_path)
         self.nameLineEdit.setText(info.name)
         self.artistLineEdit.setText(info.artist)
@@ -73,7 +81,7 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         :param index: The model index.
         """
         file_path = self.trackModel.file_path_for(index)
-        self.trackDetailsDialog.set_file_path(file_path)
+        self.trackDetailsDialog.set_file(file_path)
         self.trackDetailsDialog.exec_()
 
 
