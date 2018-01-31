@@ -41,6 +41,9 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         :param file_path: The file path.
         """
         info = track_info.TrackInfo(file_path)
+
+        self.summaryLabel.setText("<b>{}</b> by <b>{}</b> on <b>{}</b>".format(info.name, info.artist, info.album))
+
         self.nameLineEdit.setText(info.name)
         self.artistLineEdit.setText(info.artist)
         self.albumArtistEdit.setText(info.album_artist)
