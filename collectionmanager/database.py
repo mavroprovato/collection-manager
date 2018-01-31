@@ -95,6 +95,7 @@ class Database:
                 JOIN directory d ON t.directory_id = d.id
                 JOIN album al ON al.id = t.album_id
                 JOIN artist ar ON ar.id = al.artist_id
+                ORDER BY d.path, t.file_name
             """)
 
             return list(cursor)
@@ -141,9 +142,9 @@ class Database:
                   INSERT INTO track(directory_id, album_id, name, number, file_name)
                   VALUES (?, ?, ?, ?, ?)
                 """,
-                (directory_id, album_id, track.name, track.number, os.path.join(relative_path, file_name))
+                (directory_id, album_id, track.name, track.track_number, os.path.join(relative_path, file_name))
             )
-            logging.debug('Processing file %s/%s finished', os.path.join(relative_path, file_name))
+            logging.debug('Processing file %s finished', os.path.join(relative_path, file_name))
         finally:
             cursor.close()
 

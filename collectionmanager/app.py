@@ -35,6 +35,7 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         info = track_info.TrackInfo(file_path)
         self.nameLineEdit.setText(info.name)
         self.artistLineEdit.setText(info.artist)
+        self.albumArtistEdit.setText(info.album_artist)
         self.albumLineEdit.setText(info.album)
         self.yearLineEdit.setText(str(info.year))
         self.trackNumberLineEdit.setText(str(info.track_number))
