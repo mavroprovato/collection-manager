@@ -1,6 +1,8 @@
 """
 The application module
 """
+import datetime
+import mutagen.mp3
 import PyQt5.Qt as Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
@@ -51,6 +53,8 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.yearLineEdit.setText(str(info.year))
         self.trackNumberLineEdit.setText(str(info.track_number))
 
+        self.fileInfoLabel.setText(self.get_file_info_text(info))
+
     @staticmethod
     def get_track_summary(info):
         """Return the track summary from the file info.
@@ -71,6 +75,37 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
             summary += " on <b>{}</b>".format(info.album)
 
         return summary
+
+    @staticmethod
+    def get_file_info_text(info):
+        """Returns the file info text to be displayed in the file info label
+
+        :param info: The file info.
+        :return: The file info text.
+        """
+        timedelta_str = str(datetime.timedelta(seconds=round(info.info.length)))
+        if timedelta_str.startswith("0:"):
+            timedelta_str = timedelta_str[2:]
+        return """
+            <table>
+                <tr><td><b>Length:</b></td><td>{}</td>
+                <tr><td><b>Bit rate:</b></td><td>{} Kbps</td>
+                <tr><td><b>Bit rate mode:</b></td><td>{}</td>
+                <tr><td><b>Sample rate:</b></td><td>{}</td>
+                <tr><td><b>Encoder:</b></td><td>{}</td>
+            </table>
+        """.format(
+            timedelta_str,
+            round(info.info.bitrate / 1000),
+            {
+                mutagen.mp3.BitrateMode.UNKNOWN: 'Unknown',
+                mutagen.mp3.BitrateMode.CBR: 'Constant Bitrate',
+                mutagen.mp3.BitrateMode.VBR: 'Variable Bitrate',
+                mutagen.mp3.BitrateMode.ABR: 'Average Bitrate',
+            }[info.info.bitrate_mode],
+            info.info.sample_rate,
+            info.info.encoder_info
+        )
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):

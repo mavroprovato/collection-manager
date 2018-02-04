@@ -16,7 +16,9 @@ class TrackInfo:
         self.track_number = None
         self.year = None
 
-        self._parse(mutagen.File(file_name))
+        file_info = mutagen.File(file_name)
+        self._parse(file_info)
+        self.info = file_info.info
 
     def _parse(self, file_info):
         self.name = file_info['TIT2'][0] if 'TIT2' in file_info else None
