@@ -42,7 +42,7 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         """
         info = track_info.TrackInfo(file_path)
 
-        self.summaryLabel.setText("<b>{}</b> by <b>{}</b> on <b>{}</b>".format(info.name, info.artist, info.album))
+        self.summaryLabel.setText(self.get_track_summary(info))
 
         self.nameLineEdit.setText(info.name)
         self.artistLineEdit.setText(info.artist)
@@ -50,6 +50,27 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.albumLineEdit.setText(info.album)
         self.yearLineEdit.setText(str(info.year))
         self.trackNumberLineEdit.setText(str(info.track_number))
+
+    @staticmethod
+    def get_track_summary(info):
+        """Return the track summary from the file info.
+
+        :param info: The file info
+        :return: The track summary as a string.
+        """
+        summary = ""
+        if info.name:
+            summary = "<b>{}</b>".format(info.name)
+        else:
+            return summary
+        if info.artist:
+            summary += " by <b>{}</b>".format(info.artist)
+        else:
+            return summary
+        if info.album:
+            summary += " on <b>{}</b>".format(info.album)
+
+        return summary
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
