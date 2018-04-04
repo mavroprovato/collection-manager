@@ -2,10 +2,10 @@
 """
 import argparse
 import logging
-import tempfile
 import os
 import re
 import sys
+import time
 
 import mutagen
 import mutagen.id3
@@ -46,10 +46,18 @@ class MusicbrainzFetcher:
         artist = re.sub(r'[:/()?]', '', artist)
         album = re.sub(r'[:/()?]', '', album)
         logging.info('Searching for release with artist "%s" and album "%s"', artist, album)
-        response = requests.get('http://musicbrainz.org/ws/2/release-group/', params={
-            'query': 'release:{} AND artist:{}'.format(album, artist), 'fmt': 'json'
-        }, headers=MusicbrainzFetcher.HEADERS)
-        response.raise_for_status()
+
+        retries = 2
+        while True:
+            response = requests.get('http://musicbrainz.org/ws/2/release-group/', params={
+                'query': 'release:{} AND artist:{}'.format(album, artist), 'fmt': 'json'
+            }, headers=MusicbrainzFetcher.HEADERS)
+            if response.status_code == requests.codes.unavailable and retries != 0:
+                time.sleep(5)
+                retries -= 1
+            else:
+                response.raise_for_status()
+                break
 
         data = response.json()
         if data['release-groups']:
@@ -103,7 +111,7 @@ def main():
             file_path = os.path.join(current_root_name, file_name)
             file_info = mutagen.File(file_path)
             artist, album = file_info['TPE1'][0], file_info['TALB'][0]
-            if 'APIC' not in file_info:
+            if 'APIC:Cover' not in file_info:
                 logging.info('Album art missing for file %s', file_path)
                 album_art_list = fetcher.fetch(artist, album)
                 if len(album_art_list) == 0:
@@ -111,6 +119,7 @@ def main():
                 album_art = album_art_list[0]
                 file_info['APIC'] = mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art)
                 file_info.save()
+                logging.info('Album art set')
 
 
 if __name__ == '__main__':
