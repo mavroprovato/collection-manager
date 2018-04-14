@@ -43,8 +43,8 @@ class MusicbrainzFetcher:
         :param album: The release album.
         :return: A list with the release ids.
         """
-        artist = re.sub(r'[:/()?]', '', artist)
-        album = re.sub(r'[:/()?]', '', album)
+        artist = re.sub(r'[:/()?\[\]!]', '', artist)
+        album = re.sub(r'[:/()?\[\]!]', '', album)
         logging.info('Searching for release with artist "%s" and album "%s"', artist, album)
 
         retries = 2
@@ -97,11 +97,11 @@ def main():
     """Main entry point of the script.
     """
     # Configure logging
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("scan_dir", help="The directory to scan for files.")
+    parser.add_argument("scan_dir", help="The directory to scan for files")
     args = parser.parse_args()
 
     # Scan the input directory
@@ -110,16 +110,20 @@ def main():
         for file_name in files:
             file_path = os.path.join(current_root_name, file_name)
             file_info = mutagen.File(file_path)
-            artist, album = file_info['TPE1'][0], file_info['TALB'][0]
-            if 'APIC:Cover' not in file_info:
+
+            if 'APIC:' not in file_info:
                 logging.info('Album art missing for file %s', file_path)
+                artist, album = file_info['TPE1'][0], file_info['TALB'][0]
                 album_art_list = fetcher.fetch(artist, album)
                 if len(album_art_list) == 0:
+                    logging.info('No album art found, skipping')
                     continue
                 album_art = album_art_list[0]
-                file_info['APIC'] = mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art)
+                file_info.tags.add(mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art))
                 file_info.save()
                 logging.info('Album art set')
+            else:
+                logging.info('File %s already contains album art', file_path)
 
 
 if __name__ == '__main__':
