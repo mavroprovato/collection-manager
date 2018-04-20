@@ -43,8 +43,8 @@ class MusicbrainzFetcher:
         :param album: The release album.
         :return: A list with the release ids.
         """
-        artist = re.sub(r'[:/()?\[\]!]', '', artist)
-        album = re.sub(r'[:/()?\[\]!]', '', album)
+        artist = re.sub(r'[:/()?\[\]!"]', '', artist)
+        album = re.sub(r'[:/()?\[\]!"]', '', album)
         logging.info('Searching for release with artist "%s" and album "%s"', artist, album)
 
         retries = 2
