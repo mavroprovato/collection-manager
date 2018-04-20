@@ -113,6 +113,9 @@ def main():
 
             if 'APIC:' not in file_info:
                 logging.info('Album art missing for file %s', file_path)
+                if 'TPE1' not in file_info or 'TALB' not in file_info:
+                    logging.warning('File info missing, skipping')
+                    continue
                 artist, album = file_info['TPE1'][0], file_info['TALB'][0]
                 album_art_list = fetcher.fetch(artist, album)
                 if len(album_art_list) == 0:
