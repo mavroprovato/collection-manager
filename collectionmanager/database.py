@@ -148,6 +148,34 @@ class Database:
         finally:
             cursor.close()
 
+    def count_albums_by_year(self):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT year, COUNT(*)
+                FROM album
+                GROUP BY year
+                ORDER BY year
+            """)
+
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+
+    def count_by_decade(self):
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT substr(year, 3, 1) || '0', COUNT(*)
+                FROM album
+                GROUP BY substr(year, 3, 1) || '0'
+                ORDER BY year
+            """)
+
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+
     @staticmethod
     def _scan_directory(directory):
         """Scan a directory for new or updated files.
