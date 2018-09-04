@@ -154,7 +154,7 @@ def main():
                 file_info.save()
                 logging.info('Album art set')
             else:
-                logging.info('Skipping file %s', file_path)
+                logging.debug('Skipping file %s', file_path)
 
 
 if __name__ == '__main__':
