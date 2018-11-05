@@ -18,6 +18,7 @@ class DiscogsManager:
         self.config_dir = config_dir
         self.token = token
         self.collection = self.get_collection()
+        self.artists = self.get_artists()
 
     def get_collection(self):
         file_name = os.path.join(self.config_dir, 'collection.json')
@@ -26,7 +27,6 @@ class DiscogsManager:
                 return json.load(f)
         else:
             collection = self.fetch_collection()
-            print(collection)
             with open(file_name, 'w') as f:
                 json.dump(collection, f)
             return collection
@@ -65,6 +65,26 @@ class DiscogsManager:
 
         return collection
 
+    def get_artists(self):
+        artists = {}
+        os.makedirs(os.path.join(self.config_dir, 'artists'), exist_ok=True)
+        for release in self.collection:
+            for artist in release['basic_information']['artists']:
+                file_name = os.path.join(self.config_dir, 'artists', str(artist['id']) + '.json')
+                if os.path.exists(file_name):
+                    with open(file_name, 'r') as f:
+                        artists[artist['id']] = json.load(f)
+                else:
+                    if artist['name'] == 'Various':
+                        continue
+                    logging.info('Fetching artist %s', artist['name'])
+                    artist_info = self.make_request(artist['resource_url'])
+                    with open(file_name, 'w') as f:
+                        json.dump(artist_info, f)
+                    artists[artist['id']] = artist_info
+
+        return artists
+
     def make_request(self, url, request_params=None, retry_count=3):
         while True:
             try:
@@ -77,7 +97,7 @@ class DiscogsManager:
                 break
             except requests.exceptions.RequestException as e:
                 retry_count -= 1
-                if retry_count == 1:
+                if retry_count == 0:
                     raise e
                 time.sleep(1)
 
@@ -91,7 +111,6 @@ def main():
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
     config_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation)
     manager = DiscogsManager(config_dir, sys.argv[1])
-    print(manager.get_collection())
 
 
 if __name__ == '__main__':
