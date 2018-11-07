@@ -19,6 +19,7 @@ class DiscogsManager:
         self.token = token
         self.collection = self.get_collection()
         self.artists = self.get_artists()
+        self.releases = self.get_releases()
 
     def get_collection(self):
         file_name = os.path.join(self.config_dir, 'collection.json')
@@ -84,6 +85,25 @@ class DiscogsManager:
                     artists[artist['id']] = artist_info
 
         return artists
+
+    def get_releases(self):
+        releases = {}
+        os.makedirs(os.path.join(self.config_dir, 'releases'), exist_ok=True)
+
+        for release in self.collection:
+            release_id = release['basic_information']['id']
+            file_name = os.path.join(self.config_dir, 'releases', str(release_id) + '.json')
+            if os.path.exists(file_name):
+                with open(file_name, 'r') as f:
+                    releases[release_id] = json.load(f)
+            else:
+                logging.info('Fetching release %s', release_id)
+                release_info = self.make_request(release['basic_information']['resource_url'])
+                with open(file_name, 'w') as f:
+                    json.dump(release_info, f)
+                releases[release_id] = release_info
+
+        return releases
 
     def make_request(self, url, request_params=None, retry_count=3):
         while True:
