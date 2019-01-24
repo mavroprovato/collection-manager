@@ -16,6 +16,7 @@ class TrackInfo:
         self.disc_number = None
         self.track_number = None
         self.year = None
+        self.album_art = None
 
         file_info = mutagen.File(file_name)
         self._parse(file_info)
@@ -29,3 +30,4 @@ class TrackInfo:
         self.disc_number = file_info['TPOS'][0] if 'TPOS' in file_info else None
         self.track_number = file_info['TRCK'][0] if 'TRCK' in file_info else None
         self.year = str(file_info['TDRC'][0]) if 'TDRC' in file_info else None
+        self.album_art = file_info['APIC:'] if 'APIC:' in file_info else None

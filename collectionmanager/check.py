@@ -42,6 +42,8 @@ def check_file(file_path: str) -> None:
         logging.warning("Track number missing for %s", file_path)
     if track_info.disc_number is None:
         logging.warning("Disc number missing for %s", file_path)
+    if track_info.album_art is None:
+        logging.warning("Album art missing for %s", file_path)
 
     # Check if capitalization of track information is correct
     if not first_letter_capital(track_info.artist):
