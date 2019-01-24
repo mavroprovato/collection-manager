@@ -7,7 +7,12 @@ import sys
 from collectionmanager.track_info import TrackInfo
 
 
-def first_letter_capital(name: str):
+def first_letter_capital(name: str) -> bool:
+    """Check if the first letter of every word is a capital letter.
+
+    :param name: The name to check.
+    :return: true if every first letter is a capital letter, false otherwise.
+    """
     if name:
         for part in re.compile(r'\s').split(name):
             if part and part[0].isalpha() and not part[0].isupper():
@@ -16,7 +21,11 @@ def first_letter_capital(name: str):
     return True
 
 
-def check_file(file_path: str):
+def check_file(file_path: str) -> None:
+    """Check a file, and print any errors that are found.
+
+    :param file_path: The absolute file path.
+    """
     logging.info("Checking file %s", file_path)
     track_info = TrackInfo(file_path)
 
