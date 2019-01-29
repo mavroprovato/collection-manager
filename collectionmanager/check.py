@@ -6,6 +6,8 @@ import sys
 
 from collectionmanager.track_info import TrackInfo
 
+WINDOWS_UNSAFE_PATTERN = re.compile(r'[<>:"/\\|?*]')
+
 
 def first_letter_capital(name: str) -> bool:
     """Check if the first letter of every word is a capital letter.
@@ -17,6 +19,29 @@ def first_letter_capital(name: str) -> bool:
         for part in re.compile(r'\s').split(name):
             if part and part[0].isalpha() and not part[0].isupper():
                 return False
+
+    return True
+
+
+def safe_windows_naming(file_path: str) -> bool:
+    """Check if a file path is safe for Windows file system. The following characters should not appear:
+
+        < (less than)
+        >(greater than)
+        : (colon)
+        " (double quote)
+        / (forward slash)
+        \ (backslash)
+        | (vertical bar or pipe)
+        ? (question mark)
+        * (asterisk)
+
+    :param file_path:
+    :return:
+    """
+    for file_component in file_path.split(os.sep):
+        if WINDOWS_UNSAFE_PATTERN.findall(file_component):
+            return False
 
     return True
 
@@ -52,6 +77,10 @@ def check_file(file_path: str) -> None:
         logging.warning("Capitalization for album of file %s is not correct", file_path)
     if not first_letter_capital(track_info.name):
         logging.warning("Capitalization for track name of file %s is not correct", file_path)
+
+    # Check for file naming
+    if not safe_windows_naming(file_path):
+        logging.warning("Name of file %s is not safe for Windows", file_path)
 
 
 def main():
