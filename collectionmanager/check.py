@@ -82,6 +82,12 @@ def check_file(file_path: str) -> None:
     if not safe_windows_naming(file_path):
         logging.warning("Name of file %s is not safe for Windows", file_path)
 
+    file_name = os.path.basename(file_path)
+    file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
+    target_file_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
+    if file_track_name != target_file_name:
+        logging.warning("File name is not correct for file %s, track name does not match", file_path)
+
 
 def main():
     """Main entry point of the script.
