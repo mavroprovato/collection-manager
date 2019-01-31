@@ -57,6 +57,8 @@ def check_file(file_path: str) -> None:
     # Check if tags are present
     if track_info.artist is None:
         logging.warning("Artist name missing for %s", file_path)
+    if track_info.album_artist is None:
+        logging.warning("Album artist name missing for %s", file_path)
     if track_info.album is None:
         logging.warning("Album name missing for %s", file_path)
     if track_info.name is None:
@@ -78,15 +80,18 @@ def check_file(file_path: str) -> None:
     if not first_letter_capital(track_info.name):
         logging.warning("Capitalization for track name of file %s is not correct", file_path)
 
-    # Check for file naming
+    # Check for safe windows characters
     if not safe_windows_naming(file_path):
         logging.warning("Name of file %s is not safe for Windows", file_path)
 
+    # Check file naming
     file_name = os.path.basename(file_path)
     file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
     target_file_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
+    if track_info.album_artist != track_info.artist:
+        target_file_name = track_info.artist + ' - ' + target_file_name
     if file_track_name != target_file_name:
-        logging.warning("File name is not correct for file %s, track name does not match", file_path)
+        logging.warning("File name is not correct for file %s, track name is not correct", file_path)
 
 
 def main():
