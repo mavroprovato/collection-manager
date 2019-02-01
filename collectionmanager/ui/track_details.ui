@@ -23,7 +23,14 @@
       <attribute name="title">
        <string>Summary</string>
       </attribute>
-      <layout class="QGridLayout" name="summaryTabGridLayout" rowstretch="0,0,1,0">
+      <layout class="QGridLayout" name="summaryTabGridLayout" rowstretch="0,0,0">
+       <item row="0" column="1">
+        <widget class="QLabel" name="summaryLabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="0">
         <widget class="QLabel" name="albumCoverLabel">
          <property name="minimumSize">
@@ -43,13 +50,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="summaryLabel">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0" colspan="2">
         <widget class="Line" name="line">
          <property name="orientation">
@@ -61,13 +61,6 @@
         <widget class="QLabel" name="fileInfoLabel">
          <property name="text">
           <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>TextLabel</string>
          </property>
         </widget>
        </item>
