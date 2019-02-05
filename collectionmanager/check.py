@@ -101,7 +101,7 @@ def check_file(file_path: str) -> None:
     if track_info.album_artist != track_info.artist:
         target_file_name = track_info.artist + ' - ' + target_file_name
     if file_track_name != target_file_name:
-        logging.warning("File name is not correct for file %s, track name is not correct", file_path)
+        logging.warning("File name is not correct for file %s, track name should be %s", file_path, target_file_name)
 
 
 def main():

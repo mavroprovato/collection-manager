@@ -11,7 +11,7 @@ def main():
     """Main entry point of the script.
     """
     # Configure logging
-    logging.basicConfig(stream=sys.stdout, level=logging.WARN)
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     # Parse arguments
     parser = argparse.ArgumentParser()
@@ -27,16 +27,20 @@ def main():
             try:
                 int(track_number)
             except ValueError:
-                disk_number = track_number[track_number.find('/') + 1:]
-                file_info['TRCK'] = mutagen.id3.TRCK(text=disk_number)
+                new_track_number = track_number[track_number.find('/') + 1:]
+                file_info['TRCK'] = mutagen.id3.TRCK(text=new_track_number)
+                logging.info('Changing track number from %s to %s for file %s', track_number, new_track_number,
+                             file_path)
                 file_info.save()
 
             disk_number = file_info['TPOS'][0] if 'TPOS' in file_info else None
             try:
                 int(disk_number)
             except ValueError:
-                disk_number = disk_number[disk_number.find('/')+1:]
-                file_info['TPOS'] = mutagen.id3.TPOS(text=disk_number)
+                new_disk_number = disk_number[disk_number.find('/')+1:]
+                file_info['TPOS'] = mutagen.id3.TPOS(text=new_disk_number)
+                logging.info('Changing disk number from %s to %s for file %s', disk_number, new_disk_number,
+                             file_path)
                 file_info.save()
 
 
