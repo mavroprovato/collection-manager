@@ -43,7 +43,7 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.albumLineEdit.setText(info.album)
         self.yearLineEdit.setText(info.year)
         self.trackNumberLineEdit.setText(info.track_number)
-        self.diskNumberLineEdit.setText(info.disc_number)
+        self.diskNumberLineEdit.setText(info.disk_number)
 
         self.fileInfoLabel.setText(self.get_file_info_text(info))
 

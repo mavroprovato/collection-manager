@@ -11,6 +11,8 @@ import mutagen
 import mutagen.id3
 import requests
 
+from collectionmanager.track_info import TrackInfo
+
 _cache = {}
 
 
@@ -137,22 +139,21 @@ def main():
     for current_root_name, _, files in os.walk(args.scan_dir):
         for file_name in files:
             file_path = os.path.join(current_root_name, file_name)
-            file_info = mutagen.File(file_path)
+            track_info = TrackInfo(file_path)
 
-            if 'APIC:' not in file_info or args.force:
+            if track_info.album_art is None or args.force:
                 logging.info('Searching album art for file %s', file_path)
-                if 'TPE1' not in file_info or 'TALB' not in file_info:
-                    logging.warning('Required file info missing, skipping')
+                if track_info.album_artist is None or track_info.album is None:
+                    logging.warning('Album artist or/and album name is missing, skipping file')
                     continue
-                artist, album = file_info['TPE1'][0], file_info['TALB'][0]
-                album_art_list = fetcher.fetch(artist, album)
+                album_art_list = fetcher.fetch(track_info.album_artist, track_info.album)
                 if len(album_art_list) == 0:
                     logging.info('No album art found, skipping')
                     continue
                 album_art = album_art_list[0]
-                file_info.tags.add(mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art))
-                file_info.save()
-                logging.info('Album art set')
+                track_info.file_info.tags.add(mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art))
+                track_info.file_info.save()
+                logging.info('Album art saved')
             else:
                 logging.debug('Skipping file %s', file_path)
 

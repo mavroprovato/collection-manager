@@ -72,11 +72,11 @@ def check_file(file_path: str) -> None:
             int(track_info.track_number)
         except ValueError:
             logging.warning("Track number is not an integer for file %s", file_path)
-    if track_info.disc_number is None:
+    if track_info.disk_number is None:
         logging.warning("Disc number missing for %s", file_path)
-    if track_info.disc_number is not None:
+    if track_info.disk_number is not None:
         try:
-            int(track_info.disc_number)
+            int(track_info.disk_number)
         except ValueError:
             logging.warning("Disc number is not an integer for file %s", file_path)
     if track_info.album_art is None:
