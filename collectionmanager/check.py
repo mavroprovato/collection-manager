@@ -97,11 +97,20 @@ def check_file(file_path: str) -> None:
     # Check file naming
     file_name = os.path.basename(file_path)
     file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
-    target_file_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
+    target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
     if track_info.album_artist != track_info.artist:
-        target_file_name = track_info.artist + ' - ' + target_file_name
-    if file_track_name != target_file_name:
-        logging.warning("File name is not correct for file %s, track name should be %s", file_path, target_file_name)
+        target_track_name = track_info.artist + ' - ' + target_track_name
+    if file_track_name != target_track_name:
+        logging.warning("File name is not correct for file %s, track name should be %s", file_path, target_track_name)
+    if track_info.track_number is not None:
+        try:
+            int(track_info.track_number)
+            target_file_name = '{:02d}. {}.mp3'.format(int(track_info.track_number), target_track_name)
+            if not file_name.endswith(target_file_name):
+                logging.warning("File name %s is not correct, should be %s for file %s", file_name, target_file_name,
+                                file_path)
+        except ValueError:
+            pass
 
 
 def main():
