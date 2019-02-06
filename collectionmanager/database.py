@@ -89,12 +89,13 @@ class Database:
         cursor = self.conn.cursor()
         try:
             cursor.execute("""
-                SELECT d.path AS directory_path, t.file_name, ar.name AS artist_name, al.name AS album_name,
-                       t.number, t.name AS track_name
+                SELECT d.path AS directory_path, t.file_name, aar.name AS album_artist_name, al.name AS album_name,
+                       t.number, tar.name AS track_artist_name, t.name AS track_name
                 FROM track t
                 JOIN directory d ON t.directory_id = d.id
                 JOIN album al ON al.id = t.album_id
-                JOIN artist ar ON ar.id = al.artist_id
+                JOIN artist aar ON aar.id = al.artist_id
+                JOIN artist tar ON tar.id = t.artist_id
                 ORDER BY d.path, t.file_name
             """)
 
@@ -115,34 +116,47 @@ class Database:
             logging.debug('Processing file %s', os.path.join(relative_path, file_name))
             file_path = os.path.join(directory, relative_path, file_name)
             track = track_info.TrackInfo(file_path)
+            print(file_path, track.artist, track.album_artist)
 
-            # Save the artist
-            cursor.execute("SELECT id FROM artist WHERE name = ?", (track.artist, ))
-            artist_id = cursor.fetchone()
-            if artist_id is None:
-                cursor.execute("INSERT INTO artist(name) VALUES (?)", (track.artist, ))
-                artist_id = cursor.lastrowid
+            # Save the album artist
+            cursor.execute("SELECT id FROM artist WHERE name = ?", (track.album_artist, ))
+            album_artist_id = cursor.fetchone()
+            if album_artist_id is None:
+                cursor.execute("INSERT INTO artist(name) VALUES (?)", (track.album_artist, ))
+                album_artist_id = cursor.lastrowid
             else:
-                artist_id = artist_id[0]
+                album_artist_id = album_artist_id[0]
 
             # Save the album
-            cursor.execute("SELECT id FROM album WHERE name = ? AND artist_id = ?", (track.album, artist_id))
+            cursor.execute("SELECT id FROM album WHERE name = ? AND artist_id = ?", (track.album, album_artist_id))
             album_id = cursor.fetchone()
             if album_id is None:
                 cursor.execute("""
                     INSERT INTO album(artist_id, name, year) VALUES (?, ?, ?)
-                """, (artist_id, track.album, track.year))
+                """, (album_artist_id, track.album, track.year))
                 album_id = cursor.lastrowid
             else:
                 album_id = album_id[0]
 
+            # Save the track artist
+            cursor.execute("SELECT id FROM artist WHERE name = ?", (track.artist,))
+            track_artist_id = cursor.fetchone()
+            if track_artist_id is None:
+                cursor.execute("INSERT INTO artist(name) VALUES (?)", (track.artist,))
+                track_artist_id = cursor.lastrowid
+            else:
+                track_artist_id = track_artist_id[0]
+
             # Insert the file information
             cursor.execute(
                 """
-                  INSERT INTO track(directory_id, album_id, name, number, file_name)
-                  VALUES (?, ?, ?, ?, ?)
+                  INSERT INTO track(directory_id, album_id, artist_id, name, number, file_name)
+                  VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (directory_id, album_id, track.name, track.track_number, os.path.join(relative_path, file_name))
+                (
+                    directory_id, album_id, track_artist_id, track.name, track.track_number,
+                    os.path.join(relative_path, file_name)
+                )
             )
             logging.debug('Processing file %s finished', os.path.join(relative_path, file_name))
         finally:
