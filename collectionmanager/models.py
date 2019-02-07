@@ -5,7 +5,7 @@ import PyQt5.QtCore as QtCore
 class TrackModel(QtCore.QAbstractTableModel):
     """The table model for track data.
     """
-    columns = ['Directory', 'File Name', 'Album Artist', 'Album', 'Track Number', 'Artist', 'Track']
+    columns = ['Directory', 'File Name', 'Album Artist', 'Album', 'Disk Number', 'Track Number', 'Artist', 'Track']
 
     def __init__(self, parent, db):
         """Create the track table model.

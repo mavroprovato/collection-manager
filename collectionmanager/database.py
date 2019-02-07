@@ -90,7 +90,7 @@ class Database:
         try:
             cursor.execute("""
                 SELECT d.path AS directory_path, t.file_name, aar.name AS album_artist_name, al.name AS album_name,
-                       t.number, tar.name AS track_artist_name, t.name AS track_name
+                       t.disk_number, t.number, tar.name AS track_artist_name, t.name AS track_name
                 FROM track t
                 JOIN directory d ON t.directory_id = d.id
                 JOIN album al ON al.id = t.album_id
@@ -116,7 +116,6 @@ class Database:
             logging.debug('Processing file %s', os.path.join(relative_path, file_name))
             file_path = os.path.join(directory, relative_path, file_name)
             track = track_info.TrackInfo(file_path)
-            print(file_path, track.artist, track.album_artist)
 
             # Save the album artist
             cursor.execute("SELECT id FROM artist WHERE name = ?", (track.album_artist, ))
@@ -150,11 +149,11 @@ class Database:
             # Insert the file information
             cursor.execute(
                 """
-                  INSERT INTO track(directory_id, album_id, artist_id, name, number, file_name)
-                  VALUES (?, ?, ?, ?, ?, ?)
+                  INSERT INTO track(directory_id, album_id, artist_id, name, disk_number, number, file_name)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    directory_id, album_id, track_artist_id, track.name, track.track_number,
+                    directory_id, album_id, track_artist_id, track.name, track.disk_number, track.track_number,
                     os.path.join(relative_path, file_name)
                 )
             )

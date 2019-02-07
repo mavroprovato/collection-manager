@@ -23,6 +23,7 @@ CREATE TABLE track (
     directory_id INTEGER,
     album_id INTEGER,
     artist_id INTEGER,
+    disk_number INTEGER,
     name TEXT,
     number INTEGER,
     file_name TEXT NOT NULL,
