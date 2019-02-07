@@ -13,11 +13,12 @@ import requests
 
 from collectionmanager.track_info import TrackInfo
 
-_cache = {}
-
 
 class MusicbrainzFetcher:
     HEADERS = {'User-Agent': 'collection-manager/0.0.1 (https://github.com/mavroprovato/collection-manager)'}
+
+    def __init__(self):
+        self.album_art_cache = {}
 
     def fetch(self, artist: str, album: str):
         """Fetch the album art for a release.
@@ -25,16 +26,16 @@ class MusicbrainzFetcher:
         :param artist: The artist name.
         :param album: The album name.
         """
-        if (artist, album) not in _cache:
+        if (artist, album) not in self.album_art_cache:
             release_ids = self.get_release_ids(artist, album)
             album_art_list = []
             for release_id in release_ids:
                 album_art = self.get_album_art(release_id)
                 if album_art is not None:
                     album_art_list.append(album_art)
-            _cache[(artist, album)] = album_art_list
+            self.album_art_cache[(artist, album)] = album_art_list
 
-        return _cache[(artist, album)]
+        return self.album_art_cache[(artist, album)]
 
     @staticmethod
     def get_release_ids(artist: str, album: str):
@@ -97,6 +98,7 @@ class MusicbrainzFetcher:
 class LastFmFetcher:
     def __init__(self, api_key):
         self.api_key = api_key
+        self.album_art_cache = {}
 
     def fetch(self, artist: str, album: str):
         """Fetch the album art for a release.
@@ -104,7 +106,7 @@ class LastFmFetcher:
         :param artist: The artist name.
         :param album: The album name.
         """
-        if (artist, album) not in _cache:
+        if (artist, album) not in self.album_art_cache:
             response = requests.get('http://ws.audioscrobbler.com/2.0/', params={
                 'method': 'album.getinfo', 'api_key': self.api_key, 'artist': artist, 'album': album, 'format': 'json'
             })
@@ -114,11 +116,11 @@ class LastFmFetcher:
             if url:
                 response = requests.get(url)
                 album_art_list = [response.content]
-                _cache[(artist, album)] = album_art_list
+                self.album_art_cache[(artist, album)] = album_art_list
             else:
                 return []
 
-        return _cache[(artist, album)]
+        return self.album_art_cache[(artist, album)]
 
 
 def main():
