@@ -16,6 +16,7 @@ from collectionmanager.track_info import TrackInfo
 
 class MusicbrainzFetcher:
     HEADERS = {'User-Agent': 'collection-manager/0.0.1 (https://github.com/mavroprovato/collection-manager)'}
+    API_BASE = 'https://musicbrainz.org/ws/2/release-group/'
 
     def __init__(self):
         self.album_art_cache = {}
@@ -51,7 +52,7 @@ class MusicbrainzFetcher:
 
         retries = 2
         while True:
-            response = requests.get('http://musicbrainz.org/ws/2/release-group/', params={
+            response = requests.get(MusicbrainzFetcher.API_BASE, params={
                 'query': 'release:{} AND artist:{}'.format(album, artist), 'fmt': 'json'
             }, headers=MusicbrainzFetcher.HEADERS)
             if response.status_code == requests.codes.unavailable and retries != 0:
@@ -96,6 +97,8 @@ class MusicbrainzFetcher:
 
 
 class LastFmFetcher:
+    API_BASE = 'https://ws.audioscrobbler.com/2.0/'
+
     def __init__(self, api_key):
         self.api_key = api_key
         self.album_art_cache = {}
@@ -107,7 +110,7 @@ class LastFmFetcher:
         :param album: The album name.
         """
         if (artist, album) not in self.album_art_cache:
-            response = requests.get('http://ws.audioscrobbler.com/2.0/', params={
+            response = requests.get(LastFmFetcher.API_BASE, params={
                 'method': 'album.getinfo', 'api_key': self.api_key, 'artist': artist, 'album': album, 'format': 'json'
             })
             response.raise_for_status()
