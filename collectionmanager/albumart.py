@@ -19,6 +19,8 @@ class MusicbrainzFetcher:
     API_BASE = 'https://musicbrainz.org/ws/2/release-group/'
 
     def __init__(self):
+        """Create the Musicbrainz album art fetcher.
+        """
         self.album_art_cache = {}
 
     def fetch(self, artist: str, album: str):
@@ -100,6 +102,10 @@ class LastFmFetcher:
     API_BASE = 'https://ws.audioscrobbler.com/2.0/'
 
     def __init__(self, api_key):
+        """Create the last.fm album art fetcher.
+
+        :param api_key: The API key to use.
+        """
         self.api_key = api_key
         self.album_art_cache = {}
 
