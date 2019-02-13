@@ -130,7 +130,7 @@ def main():
 
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
     config_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation)
-    manager = DiscogsManager(config_dir, sys.argv[1])
+    DiscogsManager(config_dir, sys.argv[1])
 
 
 if __name__ == '__main__':
