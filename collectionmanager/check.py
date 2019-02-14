@@ -65,15 +65,25 @@ def check_file(file_path: str) -> None:
         logging.warning("Track name missing for %s", file_path)
     if track_info.year is None:
         logging.warning("Track year missing for %s", file_path)
+    else:
+        try:
+            int(track_info.year)
+        except ValueError:
+            logging.warning("Track year is not a number for %s", file_path)
     if track_info.track_number is None:
         logging.warning("Track number missing for %s", file_path)
-    if track_info.track_number is not None:
+    else:
         try:
             int(track_info.track_number)
         except ValueError:
-            logging.warning("Track number is not an integer for file %s", file_path)
+            logging.warning("Track number is not a number for %s", file_path)
     if track_info.disk_number is None:
         logging.warning("Disc number missing for %s", file_path)
+    else:
+        try:
+            int(track_info.disk_number)
+        except ValueError:
+            logging.warning("Disk number is not a number for %s", file_path)
     if track_info.disk_number is not None:
         try:
             int(track_info.disk_number)
@@ -97,6 +107,11 @@ def check_file(file_path: str) -> None:
     # Check file naming
     file_name = os.path.basename(file_path)
     file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
+    if track_info.album is not None and track_info.year is not None:
+        album_dir_name = '[{}] {}'.format(track_info.year,  WINDOWS_UNSAFE_PATTERN.sub('_', track_info.album))
+        parent_dir_name = os.path.basename(os.path.dirname(file_path))
+        if album_dir_name != parent_dir_name:
+            logging.warning('Parent directory for file %s is not correct, should be %s', file_path, album_dir_name)
     target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
     if track_info.album_artist != track_info.artist:
         target_track_name = track_info.artist + ' - ' + target_track_name
