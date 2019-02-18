@@ -2,6 +2,7 @@ import datetime
 
 import mutagen.mp3
 from PyQt5 import QtWidgets as QtWidgets
+from PyQt5.QtGui import QPixmap
 
 from collectionmanager import track_info as track_info
 from collectionmanager.ui import track_details as track_details
@@ -45,6 +46,10 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.yearLineEdit.setText(self.track_info.year)
         self.trackNumberLineEdit.setText(self.track_info.track_number)
         self.diskNumberLineEdit.setText(self.track_info.disk_number)
+        if self.track_info.album_art is not None:
+            pix_map = QPixmap()
+            pix_map.loadFromData(self.track_info.album_art.data)
+            self.albumCoverLabel.setPixmap(pix_map)
 
         self.fileInfoLabel.setText(self.get_file_info_text())
 
