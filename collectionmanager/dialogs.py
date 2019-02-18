@@ -79,7 +79,7 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         :return: The file info text.
         """
         if self.track_info:
-            timedelta_str = str(datetime.timedelta(seconds=round(self.track_info.info.length)))
+            timedelta_str = str(datetime.timedelta(seconds=round(self.track_info.length)))
             if timedelta_str.startswith("0:"):
                 timedelta_str = timedelta_str[2:]
 
@@ -93,13 +93,13 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
                 </table>
             """.format(
                 timedelta_str,
-                round(self.track_info.info.bitrate / 1000),
+                round(self.track_info.bitrate / 1000),
                 {
                     mutagen.mp3.BitrateMode.UNKNOWN: 'Unknown',
                     mutagen.mp3.BitrateMode.CBR: 'Constant Bitrate',
                     mutagen.mp3.BitrateMode.VBR: 'Variable Bitrate',
                     mutagen.mp3.BitrateMode.ABR: 'Average Bitrate',
-                }[self.track_info.info.bitrate_mode],
-                self.track_info.info.sample_rate,
-                self.track_info.info.encoder_info
+                }[self.track_info.bitrate_mode],
+                self.track_info.sample_rate,
+                self.track_info.encoder_info
             )
