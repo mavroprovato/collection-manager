@@ -37,21 +37,41 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         """
         self.track_info = track_info.TrackInfo(file_path)
 
-        self.summaryLabel.setText(self.get_track_summary())
+        self.set_summary_tab()
+        self.set_details_tab()
 
-        self.nameLineEdit.setText(self.track_info.name)
-        self.artistLineEdit.setText(self.track_info.artist)
-        self.albumArtistEdit.setText(self.track_info.album_artist)
-        self.albumLineEdit.setText(self.track_info.album)
-        self.yearLineEdit.setText(self.track_info.year)
-        self.trackNumberLineEdit.setText(self.track_info.track_number)
-        self.diskNumberLineEdit.setText(self.track_info.disk_number)
+    def set_summary_tab(self):
+        """Set the UI elements of the summary tab
+        """
         if self.track_info.album_art is not None:
             pix_map = QPixmap()
             pix_map.loadFromData(self.track_info.album_art.data)
-            self.albumCoverLabel.setPixmap(pix_map)
+            self.album_cover_label.setPixmap(pix_map)
+        self.summary_label.setText(self.get_track_summary())
+        timedelta_str = str(datetime.timedelta(seconds=round(self.track_info.length)))
+        if timedelta_str.startswith("0:"):
+            timedelta_str = timedelta_str[2:]
+        self.label_value_label.setText(timedelta_str)
+        self.bit_rate_value_label.setText('{} Kbps'.format(round(self.track_info.bitrate / 1000)))
+        self.bit_rate_mode_value_label.setText({
+            mutagen.mp3.BitrateMode.UNKNOWN: 'Unknown',
+            mutagen.mp3.BitrateMode.CBR: 'Constant Bitrate',
+            mutagen.mp3.BitrateMode.VBR: 'Variable Bitrate',
+            mutagen.mp3.BitrateMode.ABR: 'Average Bitrate',
+        }[self.track_info.bitrate_mode])
+        self.sample_rate_value_label.setText(str(self.track_info.sample_rate))
+        self.encoder_value_label.setText(self.track_info.encoder_info)
 
-        self.fileInfoLabel.setText(self.get_file_info_text())
+    def set_details_tab(self):
+        """Set the UI elements of the details tab
+        """
+        self.name_line_edit.setText(self.track_info.name)
+        self.artist_line_edit.setText(self.track_info.artist)
+        self.album_artist_edit.setText(self.track_info.album_artist)
+        self.album_line_edit.setText(self.track_info.album)
+        self.year_line_edit.setText(self.track_info.year)
+        self.track_number_line_eEdit.setText(self.track_info.track_number)
+        self.disk_number_line_edit.setText(self.track_info.disk_number)
 
     def get_track_summary(self):
         """Return the track summary from the file info.
@@ -72,34 +92,3 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
                 summary += " on <b>{}</b>".format(self.track_info.album)
 
         return summary
-
-    def get_file_info_text(self):
-        """Returns the file info text to be displayed in the file info label
-
-        :return: The file info text.
-        """
-        if self.track_info:
-            timedelta_str = str(datetime.timedelta(seconds=round(self.track_info.length)))
-            if timedelta_str.startswith("0:"):
-                timedelta_str = timedelta_str[2:]
-
-            return """
-                <table>
-                    <tr><td><b>Length:</b></td><td>{}</td>
-                    <tr><td><b>Bit rate:</b></td><td>{} Kbps</td>
-                    <tr><td><b>Bit rate mode:</b></td><td>{}</td>
-                    <tr><td><b>Sample rate:</b></td><td>{}</td>
-                    <tr><td><b>Encoder:</b></td><td>{}</td>
-                </table>
-            """.format(
-                timedelta_str,
-                round(self.track_info.bitrate / 1000),
-                {
-                    mutagen.mp3.BitrateMode.UNKNOWN: 'Unknown',
-                    mutagen.mp3.BitrateMode.CBR: 'Constant Bitrate',
-                    mutagen.mp3.BitrateMode.VBR: 'Variable Bitrate',
-                    mutagen.mp3.BitrateMode.ABR: 'Average Bitrate',
-                }[self.track_info.bitrate_mode],
-                self.track_info.sample_rate,
-                self.track_info.encoder_info
-            )
