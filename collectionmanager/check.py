@@ -114,7 +114,7 @@ def check_file(file_path: str) -> None:
             logging.warning('Parent directory for file %s is not correct, should be %s', file_path, album_dir_name)
     target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
     if track_info.album_artist != track_info.artist:
-        target_track_name = track_info.artist + ' - ' + target_track_name
+        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.artist + ' - ' + target_track_name)
     if file_track_name != target_track_name:
         logging.warning("File name is not correct for file %s, track name should be %s", file_path, target_track_name)
     if track_info.track_number is not None:
