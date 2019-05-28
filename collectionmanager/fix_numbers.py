@@ -39,8 +39,8 @@ def main():
                 if track_info.disk_number.find('/') != -1:
                     new_disk_number = track_info.disk_number[:track_info.disk_number.find('/')]
                     track_info.file_info['TPOS'] = mutagen.id3.TPOS(text=new_disk_number)
-                    logging.info('Changing disk number from %s to %s for file %s', track_info.disk_number, new_disk_number,
-                                 file_path)
+                    logging.info('Changing disk number from %s to %s for file %s', track_info.disk_number,
+                                 new_disk_number, file_path)
                     track_info.file_info.save()
 
 
