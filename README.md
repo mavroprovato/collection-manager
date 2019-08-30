@@ -6,10 +6,18 @@ An application that helps organizing your music library.
 Installation
 ============
 
-This is a Python 3 project. It depends to the following libraries:
+This project requires Python 3.6+ to run, and the dependencies are managed with [pipenv](https://docs.pipenv.org/). In
+order to install the dependencies and create an environment, run:
 
-* [PyQt5](http://www.riverbankcomputing.com/software/pyqt/intro)
-* [Mutagen](https://mutagen.readthedocs.org)
+```
+pipenv install
+```
+
+You can launch the user interface with:
+
+```
+pipenv run python -m collectionmanager.app
+```
 
 License
 =======
