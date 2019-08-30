@@ -5,6 +5,8 @@ import sqlite3
 
 import collectionmanager.track_info as track_info
 
+DATABASE_FILE_NAME = 'db.sqlite'
+
 
 class Database:
     """The track database
@@ -20,7 +22,7 @@ class Database:
 
         :return: The database connection.
         """
-        db_file = pathlib.Path(config_dir, 'db.sqlite')
+        db_file = pathlib.Path(config_dir, DATABASE_FILE_NAME)
         # Check if the file exists
         if not db_file.exists():
             # Make sure the parent directory exists
