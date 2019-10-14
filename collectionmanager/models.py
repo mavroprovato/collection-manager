@@ -34,8 +34,6 @@ class Album(Base):
     year = sqlalchemy.Column(sqlalchemy.Integer)
     artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
 
-    artist = sqlalchemy.orm.relationship('Artist', back_populates='albums')
-
 
 class Track(Base):
     """Information about a track.
@@ -51,6 +49,3 @@ class Track(Base):
     artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
     album_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('albums.id'))
 
-    directory = sqlalchemy.orm.relationship('Directory', back_populates='albums')
-    artist = sqlalchemy.orm.relationship('Artist', back_populates='albums')
-    album = sqlalchemy.orm.relationship('Album', back_populates='albums')
