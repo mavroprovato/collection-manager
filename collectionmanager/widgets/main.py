@@ -2,7 +2,7 @@
 """
 import PyQt5.QtWidgets as QtWidgets
 
-import collectionmanager.models as models
+import collectionmanager.uimodels as models
 import collectionmanager.ui.main_widget as main_widget
 from collectionmanager.dialogs import TrackDetailDialog
 
