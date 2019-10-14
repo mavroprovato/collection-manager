@@ -93,6 +93,7 @@ class Database:
 
         # Add artist information
         artist_name = file_info['TPE1'][0] if 'TPE1' in file_info else None
+        artist = None
         if artist_name:
             artist = session.query(models.Artist).filter(models.Artist.name == artist_name).first()
             if not artist:
@@ -101,6 +102,20 @@ class Database:
             track.artist = artist
         else:
             logging.warning("Album artist is missing")
+
+        # Add the album information
+        album_name = file_info['TALB'][0] if 'TALB' in file_info else None
+        album_year = file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None
+        if album_name and album_year:
+            album = session.query(models.Album).filter(
+                models.Album.name == album_name, models.Album.year == album_year
+            ).first()
+            if not album:
+                album = models.Album(name=album_name, year=album_year, artist=artist)
+                session.add(album)
+            track.album = album
+        else:
+            logging.warning("Album information is missing")
 
         session.add(track)
 
