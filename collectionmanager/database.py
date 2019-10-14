@@ -117,6 +117,11 @@ class Database:
         else:
             logging.warning("Album information is missing")
 
+        # Add track information
+        track.name = file_info['TIT2'][0] if 'TIT2' in file_info else None
+        track.disk_number = file_info['TPOS'][0] if 'TPOS' in file_info else None
+        track.number = file_info['TRCK'][0] if 'TRCK' in file_info else None
+
         session.add(track)
 
 
