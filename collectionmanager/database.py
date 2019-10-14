@@ -1,6 +1,7 @@
 import logging
 import pathlib
 
+import mutagen
 import sqlalchemy.orm
 
 from collectionmanager import models
@@ -86,6 +87,20 @@ class Database:
             track = models.Track()
             track.directory = directory
             track.file_name = str(file_name)
+
+        # Populate track with ID3 information
+        file_info = mutagen.File(file_path)
+
+        # Add artist information
+        artist_name = file_info['TPE1'][0] if 'TPE1' in file_info else None
+        if artist_name:
+            artist = session.query(models.Artist).filter(models.Artist.name == artist_name).first()
+            if not artist:
+                artist = models.Artist(name=artist_name)
+                session.add(artist)
+            track.artist = artist
+        else:
+            logging.warning("Album artist is missing")
 
         session.add(track)
 
