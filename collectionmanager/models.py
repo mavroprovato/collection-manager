@@ -44,6 +44,7 @@ class Track(Base):
     """Information about a track.
     """
     __tablename__ = 'tracks'
+    __table_args__ = (sqlalchemy.Index('idx_directory_file_name', 'directory_id', 'file_name'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String)

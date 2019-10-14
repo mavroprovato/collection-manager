@@ -62,15 +62,32 @@ class Database:
         # Scan the directory
         logging.info(f"Scanning directory {directory_path}")
         for file_path in directory_path.glob('**/*.mp3'):
-            self._process_file(directory_path, file_path)
+            self._process_file(session, directory_path, file_path)
+        session.commit()
 
-    def _process_file(self, directory_path: pathlib.Path, file_path: pathlib.Path):
+    @staticmethod
+    def _process_file(session, directory_path: pathlib.Path, file_path: pathlib.Path):
         """Process a file.
 
         :param directory_path: The directory where the file belongs to.
         :param file_path: The file path.
         """
-        logging.info(f"Scanning file {file_path} under directory {directory_path}")
+        logging.info(f"Scanning file {file_path}")
+        # Get the file directory
+        directory = session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
+        if directory is None:
+            raise ValueError(f"Directory {directory_path} does not exits")
+
+        # Get the track if it already exist
+        file_name = file_path.relative_to(directory_path)
+        track = session.query(models.Track).filter(
+            models.Track.directory == directory, models.Track.file_name == str(file_name)).first()
+        if track is None:
+            track = models.Track()
+            track.directory = directory
+            track.file_name = str(file_name)
+
+        session.add(track)
 
 
 def main():
@@ -82,4 +99,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
