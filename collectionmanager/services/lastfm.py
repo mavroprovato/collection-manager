@@ -3,7 +3,7 @@ import typing
 import requests
 
 
-class LastFmConnector:
+class LastFmService:
     """Connector for the last.fm service
     """
     API_BASE = 'https://ws.audioscrobbler.com/2.0/'
