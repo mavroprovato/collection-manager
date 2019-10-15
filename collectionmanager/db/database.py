@@ -39,12 +39,12 @@ class Database:
 
         return engine
 
-    def scan_directory(self, directory_path: str):
-        """Scan a directory.
+    def add_directory(self, directory_path: str):
+        """Add a directory to the library.
 
         :param directory_path: The directory path.
         """
-        # Check if the provided path is an existing directory
+        # Check if the provided path exists
         directory_path = pathlib.Path(directory_path).resolve()
         if not directory_path.exists():
             raise ValueError(f"Path {directory_path} is does not exist")
@@ -66,8 +66,7 @@ class Database:
             self._process_file(session, directory_path, file_path)
         session.commit()
 
-    @staticmethod
-    def _process_file(session, directory_path: pathlib.Path, file_path: pathlib.Path):
+    def _process_file(self, session, directory_path: pathlib.Path, file_path: pathlib.Path):
         """Process a file.
 
         :param directory_path: The directory where the file belongs to.
@@ -79,7 +78,7 @@ class Database:
         if directory is None:
             raise ValueError(f"Directory {directory_path} does not exits")
 
-        # Get the track if it already exist
+        # Get the track from the database if it already exists
         file_name = file_path.relative_to(directory_path)
         track = session.query(models.Track).filter(
             models.Track.directory == directory, models.Track.file_name == str(file_name)).first()
@@ -89,42 +88,58 @@ class Database:
             track.file_name = str(file_name)
 
         # Populate track with ID3 information
-        file_info = mutagen.File(file_path)
+        track_info = self._get_track_info(file_path)
 
         # Add artist information
-        artist_name = file_info['TPE1'][0] if 'TPE1' in file_info else None
         artist = None
-        if artist_name:
-            artist = session.query(models.Artist).filter(models.Artist.name == artist_name).first()
+        if track_info['artist_name']:
+            artist = session.query(models.Artist).filter(models.Artist.name == track_info['artist_name']).first()
             if not artist:
-                artist = models.Artist(name=artist_name)
+                artist = models.Artist(name=track_info['artist_name'])
                 session.add(artist)
             track.artist = artist
         else:
             logging.warning("Album artist is missing")
 
         # Add the album information
-        album_name = file_info['TALB'][0] if 'TALB' in file_info else None
-        album_year = file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None
-        if album_name and album_year:
+        if track_info['album_name'] and track_info['album_year']:
             album = session.query(models.Album).filter(
-                models.Album.name == album_name, models.Album.year == album_year
+                models.Album.name == track_info['album_name'], models.Album.year == track_info['album_year']
             ).first()
             if not album:
-                album = models.Album(name=album_name, year=album_year, artist=artist)
+                album = models.Album(name=track_info['album_name'], year=track_info['album_year'], artist=artist)
                 session.add(album)
             track.album = album
         else:
-            logging.warning("Album information is missing")
+            logging.warning("Album name and/or year is missing")
 
         # Add track information
-        track.name = file_info['TIT2'][0] if 'TIT2' in file_info else None
-        track.disk_number = file_info['TPOS'][0] if 'TPOS' in file_info else None
-        track.number = file_info['TRCK'][0] if 'TRCK' in file_info else None
+        track.name = track_info['name']
+        track.disk_number = track_info['disk_number']
+        track.number = track_info['disk_number']
 
         session.add(track)
 
+    @staticmethod
+    def _get_track_info(file_path: pathlib.Path) -> dict:
+        """Get the track information from the
+
+        :param file_path: The file path.
+        :return: A dictionary with the track information.
+        """
+        file_info = mutagen.File(file_path)
+
+        return {
+            'artist_name': file_info['TPE1'][0] if 'TPE1' in file_info else None,
+            'album_name': file_info['TALB'][0] if 'TALB' in file_info else None,
+            'album_year': file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None,
+            'name': file_info['TIT2'][0] if 'TIT2' in file_info else None,
+            'disk_number': file_info['TPOS'][0] if 'TPOS' in file_info else None,
+            'number': file_info['TRCK'][0] if 'TRCK' in file_info else None
+        }
+
     def tracks(self):
+        # TODO: Remove this and implement the model
         return []
 
 
@@ -132,7 +147,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     import os
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.scan_directory(os.path.expanduser('~/Music'))
+    d.add_directory(os.path.expanduser('~/Music'))
 
 
 if __name__ == '__main__':
