@@ -35,7 +35,7 @@ class TrackModel(QtCore.QAbstractTableModel):
     def refresh(self):
         """Refresh the model.
         """
-        self.modelData = self.db.track_data()
+        self.modelData = self.db.tracks()
         self.modelReset.emit()
 
     def file_path_for(self, index):

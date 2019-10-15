@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 
-import collectionmanager.database as database
+import collectionmanager.db.database as database
 
 
 def main():

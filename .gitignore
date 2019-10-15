@@ -8,7 +8,4 @@ venv
 .idea
 
 # Qt Designer Python files
-collectionmanager/ui/*.py
-
-# Qt Resources Python files
-collectionmanager/resources/*.py
+collectionmanager/ui/ui/*.py

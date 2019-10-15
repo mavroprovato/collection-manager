@@ -2,9 +2,9 @@
 """
 import PyQt5.QtWidgets as QtWidgets
 
-import collectionmanager.uimodels as models
-import collectionmanager.ui.main_widget as main_widget
-from collectionmanager.dialogs import TrackDetailDialog
+from collectionmanager.ui import models
+import collectionmanager.ui.ui.main_widget as main_widget
+from collectionmanager.ui.dialogs import TrackDetailDialog
 
 
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
@@ -19,7 +19,7 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         super(MainWidget, self).__init__(parent)
 
         self.libraryTableModel = models.TrackModel(self, db)
-        self.trackDetailsDialog = TrackDetailDialog(self)
+        # self.trackDetailsDialog = TrackDetailDialog(self)
 
         self.setupUi()
 

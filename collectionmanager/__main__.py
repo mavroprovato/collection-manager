@@ -4,7 +4,7 @@ import sys
 
 import PyQt5.QtWidgets as QtWidgets
 
-from .windows import main as main_window
+from collectionmanager.ui import windows as main_window
 
 APP_NAME = 'collection-manager'
 

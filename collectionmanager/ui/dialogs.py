@@ -4,8 +4,7 @@ import mutagen.mp3
 from PyQt5 import QtWidgets as QtWidgets
 from PyQt5.QtGui import QPixmap
 
-from collectionmanager import track_info as track_info
-from collectionmanager.ui import track_details as track_details
+from collectionmanager.ui.ui import track_details
 
 
 class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):

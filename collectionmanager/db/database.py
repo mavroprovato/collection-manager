@@ -4,7 +4,7 @@ import pathlib
 import mutagen
 import sqlalchemy.orm
 
-from collectionmanager import models
+from collectionmanager.db import models
 
 
 class Database:
@@ -123,6 +123,9 @@ class Database:
         track.number = file_info['TRCK'][0] if 'TRCK' in file_info else None
 
         session.add(track)
+
+    def tracks(self):
+        return []
 
 
 def main():

@@ -5,10 +5,10 @@ import PyQt5.Qt as Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
 
-import collectionmanager.database as database
+import collectionmanager.db.database as database
 from collectionmanager.threads import scandirectory
-import collectionmanager.ui.main_window as main_window
-from collectionmanager.widgets.main import MainWidget
+import collectionmanager.ui.ui.main_window as main_window
+from collectionmanager.ui.widgets import MainWidget
 
 
 class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
