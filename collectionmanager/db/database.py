@@ -3,6 +3,7 @@ import pathlib
 
 import mutagen
 import sqlalchemy.orm
+from sqlalchemy.orm import Session
 
 from collectionmanager.db import models
 
@@ -66,9 +67,10 @@ class Database:
             self._process_file(session, directory_path, file_path)
         session.commit()
 
-    def _process_file(self, session, directory_path: pathlib.Path, file_path: pathlib.Path):
+    def _process_file(self, session: Session, directory_path: pathlib.Path, file_path: pathlib.Path):
         """Process a file.
 
+        :param session: The database session to use.
         :param directory_path: The directory where the file belongs to.
         :param file_path: The file path.
         """
