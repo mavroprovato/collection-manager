@@ -12,6 +12,7 @@ class TrackModel(QtCore.QAbstractTableModel):
         {'name': 'Directory', 'source': 'directory.path'},
         {'name': 'File Name', 'source': 'file_name'},
         {'name': 'Album Artist', 'source': 'artist.name'},
+        {'name': 'Artist', 'source': 'artist_name'},
         {'name': 'Album', 'source': 'album.name'},
         {'name': 'Disk Number', 'source': 'disk_number'},
         {'name': 'Track Number', 'source': 'number'},
