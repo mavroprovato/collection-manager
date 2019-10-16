@@ -105,10 +105,10 @@ class Database:
 
         # Add artist information
         artist = None
-        if track_info['artist_name']:
-            artist = session.query(models.Artist).filter(models.Artist.name == track_info['artist_name']).first()
+        if track_info['album_artist']:
+            artist = session.query(models.Artist).filter(models.Artist.name == track_info['album_artist']).first()
             if not artist:
-                artist = models.Artist(name=track_info['artist_name'])
+                artist = models.Artist(name=track_info['album_artist'])
                 session.add(artist)
             track.artist = artist
         else:
@@ -128,8 +128,10 @@ class Database:
 
         # Add track information
         track.name = track_info['name']
+        track.artist_name = track_info['artist_name']
         track.disk_number = track_info['disk_number']
         track.number = track_info['disk_number']
+        track.info = track_info['info']
         track.last_scanned = datetime.datetime.now()
 
         session.add(track)
@@ -145,11 +147,19 @@ class Database:
 
         return {
             'artist_name': file_info['TPE1'][0] if 'TPE1' in file_info else None,
+            'album_artist': file_info['TPE2'][0] if 'TPE1' in file_info else None,
             'album_name': file_info['TALB'][0] if 'TALB' in file_info else None,
             'album_year': file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None,
             'name': file_info['TIT2'][0] if 'TIT2' in file_info else None,
             'disk_number': file_info['TPOS'][0] if 'TPOS' in file_info else None,
-            'number': file_info['TRCK'][0] if 'TRCK' in file_info else None
+            'number': file_info['TRCK'][0] if 'TRCK' in file_info else None,
+            'info': {
+                'length': file_info.info.length,
+                'bitrate': file_info.info.bitrate,
+                'bitrate_mode': str(file_info.info.bitrate_mode),
+                'sample_rate': file_info.info. sample_rate,
+                'encoder_info': file_info.info.encoder_info,
+            }
         }
 
 

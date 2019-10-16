@@ -47,10 +47,12 @@ class Track(Base):
     __table_args__ = (sqlalchemy.Index('idx_directory_file_name', 'directory_id', 'file_name'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    artist_name = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
     disk_number = sqlalchemy.Column(sqlalchemy.Integer)
     number = sqlalchemy.Column(sqlalchemy.Integer)
     file_name = sqlalchemy.Column(sqlalchemy.String)
+    info = sqlalchemy.Column(sqlalchemy.JSON)
     last_scanned = sqlalchemy.Column(sqlalchemy.DateTime)
 
     directory_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('directories.id'))
