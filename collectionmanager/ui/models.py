@@ -1,49 +1,94 @@
-import os
+import PyQt5.Qt as Qt
 import PyQt5.QtCore as QtCore
+import PyQt5.QtWidgets as QtWidgets
+
+from ..db.database import Database
 
 
 class TrackModel(QtCore.QAbstractTableModel):
     """The table model for track data.
     """
-    columns = ['Directory', 'File Name', 'Album Artist', 'Album', 'Disk Number', 'Track Number', 'Artist', 'Track']
+    column_info = [
+        {'name': 'Directory', 'source': 'directory.path'},
+        {'name': 'File Name', 'source': 'file_name'},
+        {'name': 'Album Artist', 'source': 'artist.name'},
+        {'name': 'Album', 'source': 'album.name'},
+        {'name': 'Disk Number', 'source': 'disk_number'},
+        {'name': 'Track Number', 'source': 'number'},
+        {'name': 'Track', 'source': 'name'},
+    ]
 
-    def __init__(self, parent, db):
+    def __init__(self, parent: QtWidgets.QWidget, db: Database):
         """Create the track table model.
 
         :param parent: The parent window.
-        :param db: The track database.
+        :param db: The database.
         """
-        super(TrackModel, self).__init__(parent)
+        super().__init__(parent)
 
         self.db = db
-        self.modelData = []
+        self.rows = []
 
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.modelData)
+        self.refresh()
 
-    def columnCount(self, parent=None, *args, **kwargs):
-        return len(TrackModel.columns)
+    def headerData(self, section, orientation, role=None) -> Qt.QVariant:
+        """Returns the data for the given role and section in the header with the specified orientation.
 
-    def headerData(self, section, orientation, *args, **kwargs):
-        if args[0] == QtCore.Qt.DisplayRole and orientation == QtCore.Qt.Horizontal:
-            return TrackModel.columns[section]
+        For horizontal headers, the section number corresponds to the column number. Similarly, for vertical headers,
+        the section number corresponds to the row number.
 
-    def data(self, index, role=None):
-        if role == QtCore.Qt.DisplayRole:
-            return self.modelData[index.row()][index.column()]
+        :param section: The section.
+        :param orientation: The orientation.
+        :param role: The role.
+        :return: The header data.
+        """
+        if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
+            return Qt.QVariant(self.column_info[section]['name'])
+
+        return Qt.QVariant()
+
+    def rowCount(self, parent=None, *args, **kwargs) -> int:
+        """Returns the number of rows under the given parent. When the parent is valid it means that rowCount is
+        returning the number of children of parent.
+
+        :param parent: The parent.
+        :param args: The positional arguments.
+        :param kwargs: The keyword arguments.
+        :return: The number of rows under the given parent.
+        """
+        return len(self.rows)
+
+    def columnCount(self, parent=None, *args, **kwargs) -> int:
+        """Returns the number of columns for the children of the given parent.
+
+        :param parent: The parent.
+        :param args: The positional arguments.
+        :param kwargs: The keyword arguments.
+        :return: The number of columns.
+        """
+        return len(self.column_info)
+
+    def data(self, index: QtCore.QModelIndex, role=None):
+        """Returns the data stored under the given role for the item referred to by the index.
+
+        :param index: The index.
+        :param role: The role.
+        :return: The data.
+        """
+        if not index.isValid() or role != Qt.Qt.DisplayRole:
+            return Qt.QVariant()
+
+        # Get the data
+        row = self.rows[index.row()]
+        field_name = self.column_info[index.column()]['source']
+        data = row
+        for field_name_part in field_name.split('.'):
+            data = getattr(data, field_name_part)
+
+        return data
 
     def refresh(self):
-        """Refresh the model.
+        """Refresh the model data from the database.
         """
-        self.modelData = self.db.tracks()
-        self.modelReset.emit()
-
-    def file_path_for(self, index):
-        """Return the file path for the track at the specified index.
-
-        :param index: The model index.
-        :return: The file path for the track.
-        """
-        row_data = self.modelData[index.row()]
-
-        return os.path.join(row_data[0], row_data[1])
+        self.rows = self.db.tracks()
+        self.layoutChanged.emit()

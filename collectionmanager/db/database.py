@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import typing
 
 import mutagen
 import sqlalchemy.orm
@@ -14,9 +15,9 @@ class Database:
     db_file_name = 'db.sqlite'
 
     def __init__(self, base_dir: str):
-        """Crate the database.
+        """Create the database.
 
-        :param base_dir:
+        :param base_dir: The base directory where the database file will be created.
         """
         self.base_dir = base_dir
         self.engine = self._get_engine()
@@ -66,6 +67,15 @@ class Database:
         for file_path in directory_path.glob('**/*.mp3'):
             self._process_file(session, directory_path, file_path)
         session.commit()
+
+    def tracks(self) -> typing.List[models.Track]:
+        """Return the tracks in the database.
+
+        :return: A list with the tracks.
+        """
+        session = self.session_maker()
+
+        return session.query(models.Track).all()
 
     def _process_file(self, session: Session, directory_path: pathlib.Path, file_path: pathlib.Path):
         """Process a file.
@@ -124,7 +134,7 @@ class Database:
 
     @staticmethod
     def _get_track_info(file_path: pathlib.Path) -> dict:
-        """Get the track information from the
+        """Get the track information from the ID3 information of the file.
 
         :param file_path: The file path.
         :return: A dictionary with the track information.
@@ -140,16 +150,12 @@ class Database:
             'number': file_info['TRCK'][0] if 'TRCK' in file_info else None
         }
 
-    def tracks(self):
-        # TODO: Remove this and implement the model
-        return []
-
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
     import os
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.add_directory(os.path.expanduser('~/Music'))
+    print(type(d.tracks()))
 
 
 if __name__ == '__main__':
