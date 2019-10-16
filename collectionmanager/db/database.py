@@ -1,3 +1,4 @@
+import datetime
 import logging
 import pathlib
 import typing
@@ -129,6 +130,7 @@ class Database:
         track.name = track_info['name']
         track.disk_number = track_info['disk_number']
         track.number = track_info['disk_number']
+        track.last_scanned = datetime.datetime.now()
 
         session.add(track)
 
@@ -155,7 +157,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
     import os
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    print(type(d.tracks()))
+    d.add_directory(os.path.expanduser('~/Music'))
 
 
 if __name__ == '__main__':

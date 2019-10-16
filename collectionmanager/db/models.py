@@ -51,6 +51,8 @@ class Track(Base):
     disk_number = sqlalchemy.Column(sqlalchemy.Integer)
     number = sqlalchemy.Column(sqlalchemy.Integer)
     file_name = sqlalchemy.Column(sqlalchemy.String)
+    last_scanned = sqlalchemy.Column(sqlalchemy.DateTime)
+
     directory_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('directories.id'))
     artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
     album_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('albums.id'))
