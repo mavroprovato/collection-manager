@@ -131,6 +131,7 @@ class Database:
         track.artist_name = track_info['artist']
         track.disk_number = track_info['disk_number']
         track.number = track_info['disk_number']
+        track.length = track_info['length']
         track.encoder_info = track_info['encoder_info']
         track.last_scanned = datetime.datetime.now()
 

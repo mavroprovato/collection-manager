@@ -54,8 +54,9 @@ class Track(Base):
     name = sqlalchemy.Column(sqlalchemy.String)
     disk_number = sqlalchemy.Column(sqlalchemy.Integer)
     number = sqlalchemy.Column(sqlalchemy.Integer)
+    length = sqlalchemy.Column(sqlalchemy.Float)
     file_name = sqlalchemy.Column(sqlalchemy.String)
-    info = sqlalchemy.Column(sqlalchemy.JSON)
+    encoder_info = sqlalchemy.Column(sqlalchemy.JSON)
     last_scanned = sqlalchemy.Column(sqlalchemy.DateTime)
 
     directory_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('directories.id'))
