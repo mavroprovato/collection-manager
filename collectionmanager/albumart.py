@@ -3,6 +3,7 @@
 import argparse
 import logging
 import os
+import pathlib
 import re
 import sys
 import time
@@ -11,7 +12,7 @@ import mutagen
 import mutagen.id3
 import requests
 
-from collectionmanager.track_info import TrackInfo
+from collectionmanager.db.models import Track
 
 
 class MusicbrainzFetcher:
@@ -150,23 +151,24 @@ def main():
     for current_root_name, _, files in os.walk(args.scan_dir):
         for file_name in files:
             file_path = os.path.join(current_root_name, file_name)
-            track_info = TrackInfo(file_path)
+            track_info = Track.from_id3(pathlib.Path(file_path))
 
-            if track_info.album_art is None or args.force:
-                logging.info('Searching album art for file %s', file_path)
-                if track_info.album_artist is None or track_info.album is None:
+            if track_info['album_art'] is None or args.force:
+                logging.info(f"Searching album art for file {file_path}")
+                if track_info['album_artist'] is None or track_info['album'] is None:
                     logging.warning('Album artist or/and album name is missing, skipping file')
                     continue
-                album_art_list = fetcher.fetch(track_info.album_artist, track_info.album)
+                album_art_list = fetcher.fetch(track_info['album_artist'], track_info['album'])
                 if len(album_art_list) == 0:
                     logging.info('No album art found, skipping')
-                    continue
-                album_art = album_art_list[0]
-                track_info.file_info.tags.add(mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art))
-                track_info.file_info.save()
-                logging.info('Album art saved')
+                else:
+                    album_art = album_art_list[0]
+                    file_info = mutagen.File(file_path)
+                    file_info.tags.add(mutagen.id3.APIC(encoding=3, mime='image/jpeg', type=3, data=album_art))
+                    file_info.save()
+                    logging.info('Album art saved')
             else:
-                logging.debug('Skipping file %s', file_path)
+                logging.debug(f"Skipping file {file_path}")
 
 
 if __name__ == '__main__':
