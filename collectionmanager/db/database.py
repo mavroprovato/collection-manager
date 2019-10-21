@@ -115,12 +115,12 @@ class Database:
             logging.warning("Album artist is missing")
 
         # Add the album information
-        if track_info['album_name'] and track_info['album_year']:
+        if track_info['album'] and track_info['year']:
             album = session.query(models.Album).filter(
-                models.Album.name == track_info['album_name'], models.Album.year == track_info['album_year']
+                models.Album.name == track_info['album'], models.Album.year == track_info['year']
             ).first()
             if not album:
-                album = models.Album(name=track_info['album_name'], year=track_info['album_year'], artist=artist)
+                album = models.Album(name=track_info['album'], year=track_info['year'], artist=artist)
                 session.add(album)
             track.album = album
         else:
@@ -128,10 +128,10 @@ class Database:
 
         # Add track information
         track.name = track_info['name']
-        track.artist_name = track_info['artist_name']
+        track.artist_name = track_info['artist']
         track.disk_number = track_info['disk_number']
         track.number = track_info['disk_number']
-        track.info = track_info['info']
+        track.encoder_info = track_info['encoder_info']
         track.last_scanned = datetime.datetime.now()
 
         session.add(track)
