@@ -101,7 +101,7 @@ class Database:
             track.file_name = str(file_name)
 
         # Populate track with ID3 information
-        track_info = self._get_track_info(file_path)
+        track_info = models.Track.from_id3(file_path)
 
         # Add artist information
         artist = None
@@ -135,32 +135,6 @@ class Database:
         track.last_scanned = datetime.datetime.now()
 
         session.add(track)
-
-    @staticmethod
-    def _get_track_info(file_path: pathlib.Path) -> dict:
-        """Get the track information from the ID3 information of the file.
-
-        :param file_path: The file path.
-        :return: A dictionary with the track information.
-        """
-        file_info = mutagen.File(file_path)
-
-        return {
-            'artist_name': file_info['TPE1'][0] if 'TPE1' in file_info else None,
-            'album_artist': file_info['TPE2'][0] if 'TPE1' in file_info else None,
-            'album_name': file_info['TALB'][0] if 'TALB' in file_info else None,
-            'album_year': file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None,
-            'name': file_info['TIT2'][0] if 'TIT2' in file_info else None,
-            'disk_number': file_info['TPOS'][0] if 'TPOS' in file_info else None,
-            'number': file_info['TRCK'][0] if 'TRCK' in file_info else None,
-            'info': {
-                'length': file_info.info.length,
-                'bitrate': file_info.info.bitrate,
-                'bitrate_mode': str(file_info.info.bitrate_mode),
-                'sample_rate': file_info.info. sample_rate,
-                'encoder_info': file_info.info.encoder_info,
-            }
-        }
 
 
 def main():

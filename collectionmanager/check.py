@@ -1,10 +1,11 @@
 import argparse
 import logging
 import os
+import pathlib
 import re
 import sys
 
-from collectionmanager.track_info import TrackInfo
+from collectionmanager.db.models import Track
 
 WINDOWS_UNSAFE_PATTERN = re.compile(r'[<>:"/\\|?*]')
 
@@ -31,7 +32,7 @@ def safe_windows_naming(file_path: str) -> bool:
         : (colon)
         " (double quote)
         / (forward slash)
-        \ (backslash)
+        \\ (backslash)
         | (vertical bar or pipe)
         ? (question mark)
         * (asterisk)
@@ -51,79 +52,93 @@ def check_file(file_path: str) -> None:
 
     :param file_path: The absolute file path.
     """
-    logging.info("Checking file %s", file_path)
-    track_info = TrackInfo(file_path)
-
-    # Check if tags are present
-    if track_info.artist is None:
-        logging.warning("Artist name missing for %s", file_path)
-    if track_info.album_artist is None:
-        logging.warning("Album artist name missing for %s", file_path)
-    if track_info.album is None:
-        logging.warning("Album name missing for %s", file_path)
-    if track_info.name is None:
-        logging.warning("Track name missing for %s", file_path)
-    if track_info.year is None:
-        logging.warning("Track year missing for %s", file_path)
-    else:
-        try:
-            int(track_info.year)
-        except ValueError:
-            logging.warning("Track year is not a number for %s", file_path)
-    if track_info.track_number is None:
-        logging.warning("Track number missing for %s", file_path)
-    else:
-        try:
-            int(track_info.track_number)
-        except ValueError:
-            logging.warning("Track number is not a number for %s", file_path)
-    if track_info.disk_number is None:
-        logging.warning("Disc number missing for %s", file_path)
-    else:
-        try:
-            int(track_info.disk_number)
-        except ValueError:
-            logging.warning("Disk number is not a number for %s", file_path)
-    if track_info.disk_number is not None:
-        try:
-            int(track_info.disk_number)
-        except ValueError:
-            logging.warning("Disc number is not an integer for file %s", file_path)
-    if track_info.album_art is None:
-        logging.warning("Album art missing for %s", file_path)
-
-    # Check if capitalization of track information is correct
-    if not first_letter_capital(track_info.artist):
-        logging.warning("Capitalization for artist of file %s is not correct", file_path)
-    if not first_letter_capital(track_info.album):
-        logging.warning("Capitalization for album of file %s is not correct", file_path)
-    if not first_letter_capital(track_info.name):
-        logging.warning("Capitalization for track name of file %s is not correct", file_path)
+    logging.info(f"Checking file {file_path}")
+    track_info = Track.from_id3(pathlib.Path(file_path))
 
     # Check for safe windows characters
     if not safe_windows_naming(file_path):
         logging.warning("Name of file %s is not safe for Windows", file_path)
 
+    # Check artist
+    if track_info['artist'] is None:
+        logging.warning(f"Artist name missing for {file_path}")
+    else:
+        # Check if capitalization of artist is correct
+        if not first_letter_capital(track_info['artist']):
+            logging.warning(f"Capitalization for artist of file {file_path} is not correct")
+
+    # Check album artist
+    if track_info['album_artist'] is None:
+        logging.warning(f"Album artist name missing for {file_path}")
+    else:
+        # Check if capitalization of album artist is correct
+        if not first_letter_capital(track_info['album_artist']):
+            logging.warning("Capitalization for album artist of file %s is not correct", file_path)
+
+    # Check album
+    if track_info['album'] is None:
+        logging.warning(f"Album name missing for {file_path}")
+    else:
+        if not first_letter_capital(track_info['album']):
+            logging.warning("Capitalization for album of file %s is not correct", file_path)
+
+    # Check track name
+    if track_info['name'] is None:
+        logging.warning(f"Track name missing for {file_path}")
+    else:
+        if not first_letter_capital(track_info['name']):
+            logging.warning(f"Capitalization for track name of file {file_path} is not correct")
+
+    # Check track year
+    if track_info['year'] is None:
+        logging.warning(f"Track year missing for {file_path}")
+    else:
+        try:
+            int(track_info['year'])
+        except ValueError:
+            logging.warning(f"Track year is not a number for {file_path}")
+
+    # Check track number
+    if track_info['number'] is None:
+        logging.warning(f"Track number missing for {file_path}")
+    else:
+        try:
+            int(track_info['number'])
+        except ValueError:
+            logging.warning(f"Track number is not a number for {file_path}")
+
+    # Check track disk number
+    if track_info['disk_number'] is None:
+        logging.warning(f"Disc number missing for {file_path}")
+    else:
+        try:
+            int(track_info['disk_number'])
+        except ValueError:
+            logging.warning(f"Disk number is not a number for {file_path}")
+
+    # Check album art
+    if track_info['album_art'] is None:
+        logging.warning(f"Album art missing for {file_path}")
+
     # Check file naming
     file_name = os.path.basename(file_path)
     file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
-    if track_info.album is not None and track_info.year is not None:
-        album_dir_name = '[{}] {}'.format(track_info.year,  WINDOWS_UNSAFE_PATTERN.sub('_', track_info.album))
+    if track_info['album'] is not None and track_info['year'] is not None:
+        album_dir_name = f"[{track_info['year']}] {WINDOWS_UNSAFE_PATTERN.sub('_', track_info['album'])}"
         parent_dir_name = os.path.basename(os.path.dirname(file_path))
         if album_dir_name != parent_dir_name:
-            logging.warning('Parent directory for file %s is not correct, should be %s', file_path, album_dir_name)
-    target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.name)
-    if track_info.album_artist != track_info.artist:
-        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info.artist + ' - ' + target_track_name)
+            logging.warning(f"Parent directory for file {file_path} is not correct, should be {album_dir_name}")
+    target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['name'])
+    if track_info['album_artist'] != track_info['artist']:
+        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['artist'] + ' - ' + target_track_name)
     if file_track_name != target_track_name:
-        logging.warning("File name is not correct for file %s, track name should be %s", file_path, target_track_name)
-    if track_info.track_number is not None:
+        logging.warning(f"File name is not correct for file {file_path}, track name should be {target_track_name}")
+    if track_info['number'] is not None:
         try:
-            int(track_info.track_number)
-            target_file_name = '{:02d}. {}.mp3'.format(int(track_info.track_number), target_track_name)
+            int(track_info['number'])
+            target_file_name = '{:02d}. {}.mp3'.format(int(track_info['number']), target_track_name)
             if not file_name.endswith(target_file_name):
-                logging.warning("File name %s is not correct, should be %s for file %s", file_name, target_file_name,
-                                file_path)
+                logging.warning(f"File name {file_name} is not correct, should be {target_file_name} ")
         except ValueError:
             pass
 
