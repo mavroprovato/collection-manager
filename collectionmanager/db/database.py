@@ -1,9 +1,9 @@
 import datetime
 import logging
+import os
 import pathlib
 import typing
 
-import mutagen
 import sqlalchemy.orm
 from sqlalchemy.orm import Session
 
@@ -47,7 +47,7 @@ class Database:
 
         :param directory_path: The directory path.
         """
-        # Check if the provided path exists
+        # Check if the provided path exists in the file system
         directory_path = pathlib.Path(directory_path).resolve()
         if not directory_path.exists():
             raise ValueError(f"Path {directory_path} is does not exist")
@@ -78,14 +78,14 @@ class Database:
 
         return session.query(models.Track).all()
 
-    def _process_file(self, session: Session, directory_path: pathlib.Path, file_path: pathlib.Path):
+    @staticmethod
+    def _process_file(session: Session, directory_path: pathlib.Path, file_path: pathlib.Path, force: bool = False):
         """Process a file.
 
         :param session: The database session to use.
         :param directory_path: The directory where the file belongs to.
         :param file_path: The file path.
         """
-        logging.info(f"Scanning file {file_path}")
         # Get the file directory
         directory = session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
         if directory is None:
@@ -99,8 +99,13 @@ class Database:
             track = models.Track()
             track.directory = directory
             track.file_name = str(file_name)
+        else:
+            if track.last_scanned > datetime.datetime.fromtimestamp(os.path.getmtime(file_path)) and not force:
+                logging.debug(f"File {file_path} already scanned")
+                return
 
         # Populate track with ID3 information
+        logging.info(f"Reading file information for {file_path}")
         track_info = models.Track.from_id3(file_path)
 
         # Add artist information
@@ -139,8 +144,7 @@ class Database:
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-    import os
+    logging.basicConfig(level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
     d.add_directory(os.path.expanduser('~/Music'))
 
