@@ -84,10 +84,7 @@ class TrackModel(QtCore.QAbstractTableModel):
         field_name = self.column_info[index.column()]['source']
         data = row
         for field_name_part in field_name.split('.'):
-            try:
-                data = getattr(data, field_name_part)
-            except:
-                pass
+            data = getattr(data, field_name_part)
 
         return data
 

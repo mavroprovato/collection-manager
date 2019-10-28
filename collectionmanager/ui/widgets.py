@@ -18,8 +18,8 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         """
         super(MainWidget, self).__init__(parent)
 
-        self.libraryTableModel = models.TrackModel(self, db)
-        # self.trackDetailsDialog = TrackDetailDialog(self)
+        self.trackModel = models.TrackModel(self, db)
+        self.trackDetailsDialog = TrackDetailDialog(self)
 
         self.setupUi()
 
@@ -30,15 +30,15 @@ class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
         """
         super(MainWidget, self).setupUi(self)
 
-        self.libraryTableView.setModel(self.libraryTableModel)
+        self.libraryTableView.setModel(self.trackModel)
         self.libraryTableView.doubleClicked.connect(self.track_table_double_clicked)
-        self.libraryTableModel.refresh()
+        self.trackModel.refresh()
 
     def track_table_double_clicked(self, index):
         """Called when the track table is double clicked.
 
         :param index: The model index.
         """
-        file_path = self.libraryTableModel.file_path_for(index)
-        self.trackDetailsDialog.set_file(file_path)
+        track = self.trackModel.rows[index.row()]
+        self.trackDetailsDialog.set_track(track)
         self.trackDetailsDialog.exec_()

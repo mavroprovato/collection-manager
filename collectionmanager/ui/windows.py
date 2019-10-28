@@ -53,4 +53,4 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
     def directory_scanned(self):
         """Called when a directory has been scanned.
         """
-        self.mainWidget.libraryTableModel.refresh()
+        self.mainWidget.trackModel.refresh()
