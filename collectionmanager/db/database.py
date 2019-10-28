@@ -22,7 +22,7 @@ class Database:
         """
         self.base_dir = base_dir
         self.engine = self._get_engine()
-        self.session_maker = sqlalchemy.orm.sessionmaker(bind=self.engine)
+        self.session = sqlalchemy.orm.sessionmaker(bind=self.engine)()
 
     def _get_engine(self) -> sqlalchemy.engine.base.Engine:
         """Get the SQLAlchemy engine.
@@ -55,37 +55,32 @@ class Database:
             raise ValueError(f"Path {directory_path} is not a directory")
 
         # Check if the directory exists in the database
-        session = self.session_maker()
-        directory = session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
+        directory = self.session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
         if directory is None:
             logging.debug("Directory does not exist, creating")
             directory = models.Directory(path=str(directory_path))
-            session.add(directory)
-            session.commit()
+            self.session.add(directory)
+            self.session.commit()
 
         # Scan the directory
         logging.info(f"Scanning directory {directory_path}")
         for file_path in directory_path.glob('**/*.mp3'):
-            self._process_file(session, directory_path, file_path)
-        session.commit()
+            self._process_file(self.session, directory_path, file_path)
+        self.session.commit()
 
     def directories(self) -> typing.List[models.Directory]:
         """Return the directories in the database.
 
         :return: A list with the directories.
         """
-        session = self.session_maker()
-
-        return session.query(models.Directory).all()
+        return self.session.query(models.Directory).all()
 
     def artists(self, order_by: str = 'name') -> typing.List[models.Artist]:
         """Return the tracks in the database.
 
         :return: A list with the tracks.
         """
-        session = self.session_maker()
-
-        query = session.query(models.Artist)
+        query = self.session.query(models.Artist)
 
         return query.order_by(order_by)
 
@@ -96,9 +91,7 @@ class Database:
         :param directory: The directory to filter by.
         :return: A list with the tracks.
         """
-        session = self.session_maker()
-
-        query = session.query(models.Track)
+        query = self.session.query(models.Track)
         if directory is not None:
             query = query.filter(models.Track.directory == directory)
         if artist is not None:
