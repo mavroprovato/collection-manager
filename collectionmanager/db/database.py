@@ -78,14 +78,33 @@ class Database:
 
         return session.query(models.Directory).all()
 
-    def tracks(self) -> typing.List[models.Track]:
+    def artists(self, order_by: str = 'name') -> typing.List[models.Artist]:
         """Return the tracks in the database.
 
         :return: A list with the tracks.
         """
         session = self.session_maker()
 
-        return session.query(models.Track).all()
+        query = session.query(models.Artist)
+
+        return query.order_by(order_by)
+
+    def tracks(self, artist: models.Artist = None, directory: models.Directory = None) -> typing.List[models.Track]:
+        """Return the tracks in the database.
+
+        :param artist: The artist to filter by.
+        :param directory: The directory to filter by.
+        :return: A list with the tracks.
+        """
+        session = self.session_maker()
+
+        query = session.query(models.Track)
+        if directory is not None:
+            query = query.filter(models.Track.directory == directory)
+        if artist is not None:
+            query = query.filter(models.Track.artist == artist)
+
+        return query.all()
 
     @staticmethod
     def _process_file(session: Session, directory_path: pathlib.Path, file_path: pathlib.Path, force: bool = False):
@@ -117,16 +136,27 @@ class Database:
         logging.info(f"Reading file information for {file_path}")
         track_info = models.Track.from_id3(file_path)
 
-        # Add artist information
-        artist = None
+        # Add album artist information
+        album_artist = None
         if track_info['album_artist']:
-            artist = session.query(models.Artist).filter(models.Artist.name == track_info['album_artist']).first()
-            if not artist:
-                artist = models.Artist(name=track_info['album_artist'])
-                session.add(artist)
-            track.artist = artist
+            album_artist = session.query(models.Artist).filter(models.Artist.name == track_info['album_artist']).first()
+            if not album_artist:
+                album_artist = models.Artist(name=track_info['album_artist'])
+                session.add(album_artist)
+            track.album_artist = album_artist
         else:
             logging.warning("Album artist is missing")
+
+        # Add track artist information
+        track_artist = None
+        if track_info['track_artist']:
+            track_artist = session.query(models.Artist).filter(models.Artist.name == track_info['track_artist']).first()
+            if not track_artist:
+                track_artist = models.Artist(name=track_info['track_artist'])
+                session.add(track_artist)
+            track.track_artist = track_artist
+        else:
+            logging.warning("Track artist is missing")
 
         # Add the album information
         if track_info['album'] and track_info['year']:
@@ -134,7 +164,7 @@ class Database:
                 models.Album.name == track_info['album'], models.Album.year == track_info['year']
             ).first()
             if not album:
-                album = models.Album(name=track_info['album'], year=track_info['year'], artist=artist)
+                album = models.Album(name=track_info['album'], year=track_info['year'], artist=album_artist)
                 session.add(album)
             track.album = album
         else:
@@ -142,7 +172,8 @@ class Database:
 
         # Add track information
         track.name = track_info['name']
-        track.artist_name = track_info['artist']
+        track.track_artist = track_artist
+        track.album_artist = album_artist
         track.disk_number = track_info['disk_number']
         track.number = track_info['disk_number']
         track.length = track_info['length']
@@ -155,8 +186,7 @@ class Database:
 def main():
     logging.basicConfig(level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    for directory in d.directories():
-        print(directory.path)
+    d.add_directory(os.path.expanduser('~/Music'))
 
 
 if __name__ == '__main__':

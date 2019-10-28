@@ -50,7 +50,6 @@ class Track(Base):
     __table_args__ = (sqlalchemy.Index('idx_directory_file_name', 'directory_id', 'file_name'), )
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    artist_name = sqlalchemy.Column(sqlalchemy.String)
     name = sqlalchemy.Column(sqlalchemy.String)
     disk_number = sqlalchemy.Column(sqlalchemy.Integer)
     number = sqlalchemy.Column(sqlalchemy.Integer)
@@ -60,11 +59,13 @@ class Track(Base):
     last_scanned = sqlalchemy.Column(sqlalchemy.DateTime)
 
     directory_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('directories.id'))
-    artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
+    track_artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
+    album_artist_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('artists.id'))
     album_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('albums.id'))
 
     directory = sqlalchemy.orm.relationship('Directory')
-    artist = sqlalchemy.orm.relationship('Artist')
+    track_artist = sqlalchemy.orm.relationship('Artist', foreign_keys=[track_artist_id])
+    album_artist = sqlalchemy.orm.relationship('Artist', foreign_keys=[album_artist_id])
     album = sqlalchemy.orm.relationship('Album')
 
     @staticmethod
@@ -77,7 +78,7 @@ class Track(Base):
         file_info = mutagen.File(file_path)
 
         return {
-            'artist': file_info['TPE1'][0] if 'TPE1' in file_info else None,
+            'track_artist': file_info['TPE1'][0] if 'TPE1' in file_info else None,
             'album_artist': file_info['TPE2'][0] if 'TPE2' in file_info else None,
             'album': file_info['TALB'][0] if 'TALB' in file_info else None,
             'year': file_info['TDRC'][0].get_text() if 'TDRC' in file_info else None,

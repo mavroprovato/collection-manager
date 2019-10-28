@@ -11,8 +11,8 @@ class TrackModel(QtCore.QAbstractTableModel):
     column_info = [
         {'name': 'Directory', 'source': 'directory.path'},
         {'name': 'File Name', 'source': 'file_name'},
-        {'name': 'Album Artist', 'source': 'artist.name'},
-        {'name': 'Artist', 'source': 'artist_name'},
+        {'name': 'Album Artist', 'source': 'album_artist.name'},
+        {'name': 'Track Artist', 'source': 'track_artist.name'},
         {'name': 'Album', 'source': 'album.name'},
         {'name': 'Disk Number', 'source': 'disk_number'},
         {'name': 'Track Number', 'source': 'number'},
@@ -84,7 +84,10 @@ class TrackModel(QtCore.QAbstractTableModel):
         field_name = self.column_info[index.column()]['source']
         data = row
         for field_name_part in field_name.split('.'):
-            data = getattr(data, field_name_part)
+            try:
+                data = getattr(data, field_name_part)
+            except:
+                pass
 
         return data
 
