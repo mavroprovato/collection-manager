@@ -66,9 +66,9 @@ class TrackDetailDialog(QtWidgets.QDialog, track_details.Ui_Dialog):
         self.name_line_edit.setText(self.track.name)
         self.artist_line_edit.setText(self.track.track_artist.name)
         self.album_artist_edit.setText(self.track.album_artist.name)
-        self.album_line_edit.setText(self.track.album.name)
+        self.track_album_line_edit.setText(self.track.album.name)
         self.year_line_edit.setText(str(self.track.album.year))
-        self.track_number_line_eEdit.setText(str(self.track.number))
+        self.track_number_line_edit.setText(str(self.track.number))
         self.disk_number_line_edit.setText(str(self.track.disk_number))
 
     def get_track_summary(self):

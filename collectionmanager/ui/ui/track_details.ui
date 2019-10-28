@@ -209,10 +209,10 @@
         <widget class="QLineEdit" name="genre_edit"/>
        </item>
        <item row="3" column="3">
-        <widget class="QLineEdit" name="track_number_line_eEdit"/>
+        <widget class="QLineEdit" name="track_number_line_edit"/>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="album_line_edit"/>
+        <widget class="QLineEdit" name="track_album_line_edit"/>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="genre_label">
@@ -258,7 +258,7 @@
         <widget class="QLineEdit" name="disk_number_line_edit"/>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="album_label">
+        <widget class="QLabel" name="track_album_label">
          <property name="text">
           <string>Album:</string>
          </property>
