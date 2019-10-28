@@ -121,7 +121,7 @@ class Database:
             track.directory = directory
             track.file_name = str(file_name)
         else:
-            if track.last_scanned > datetime.datetime.fromtimestamp(os.path.getmtime(file_path)) and not force:
+            if track.last_scanned > datetime.datetime.fromtimestamp(os.path.getmtime(str(file_path))) and not force:
                 logging.debug(f"File {file_path} already scanned")
                 return
 
