@@ -69,6 +69,15 @@ class Database:
             self._process_file(session, directory_path, file_path)
         session.commit()
 
+    def directories(self) -> typing.List[models.Directory]:
+        """Return the directories in the database.
+
+        :return: A list with the directories.
+        """
+        session = self.session_maker()
+
+        return session.query(models.Directory).all()
+
     def tracks(self) -> typing.List[models.Track]:
         """Return the tracks in the database.
 
@@ -146,7 +155,8 @@ class Database:
 def main():
     logging.basicConfig(level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.add_directory(os.path.expanduser('~/Music'))
+    for directory in d.directories():
+        print(directory.path)
 
 
 if __name__ == '__main__':
