@@ -69,6 +69,18 @@ class Database:
             self._process_file(self.session, directory_path, file_path, force)
         self.session.commit()
 
+    def remove_missing(self):
+        """Remove all missing tracks from the library
+        """
+        # Scan all tracks
+        for track in self.tracks():
+            track_path = pathlib.Path(track.directory.path, track.file_name)
+            if not track_path.exists():
+                logging.info(f"File {track_path} does not exist")
+                logging.info(f"Deleting track")
+                self.session.delete(track)
+        self.session.commit()
+
     def directories(self) -> typing.List[models.Directory]:
         """Return the directories in the database.
 
@@ -180,7 +192,8 @@ class Database:
 def main():
     logging.basicConfig(level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.add_directory(os.path.expanduser('~/Music'), True)
+    # d.add_directory(os.path.expanduser('~/Music'), True)
+    d.remove_missing()
 
 
 if __name__ == '__main__':
