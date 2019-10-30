@@ -60,12 +60,12 @@ def check_file(file_path: str) -> None:
         logging.warning("Name of file %s is not safe for Windows", file_path)
 
     # Check artist
-    if track_info['artist'] is None:
-        logging.warning(f"Artist name missing for {file_path}")
+    if track_info['track_artist'] is None:
+        logging.warning(f"Track artist name missing for {file_path}")
     else:
         # Check if capitalization of artist is correct
-        if not first_letter_capital(track_info['artist']):
-            logging.warning(f"Capitalization for artist of file {file_path} is not correct")
+        if not first_letter_capital(track_info['track_artist']):
+            logging.warning(f"Capitalization for track artist of file {file_path} is not correct")
 
     # Check album artist
     if track_info['album_artist'] is None:
@@ -129,8 +129,8 @@ def check_file(file_path: str) -> None:
         if album_dir_name != parent_dir_name:
             logging.warning(f"Parent directory for file {file_path} is not correct, should be {album_dir_name}")
     target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['name'])
-    if track_info['album_artist'] != track_info['artist']:
-        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['artist'] + ' - ' + target_track_name)
+    if track_info['album_artist'] != track_info['track_artist']:
+        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['track_artist'] + ' - ' + target_track_name)
     if file_track_name != target_track_name:
         logging.warning(f"File name is not correct for file {file_path}, track name should be {target_track_name}")
     if track_info['number'] is not None:

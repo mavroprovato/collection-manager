@@ -2,6 +2,7 @@ import datetime
 import logging
 import os
 import pathlib
+import sys
 import typing
 
 import sqlalchemy.orm
@@ -42,6 +43,16 @@ class Database:
 
         return engine
 
+    def rescan(self, force: bool = False):
+        """Rescan the library.
+
+        :param force: Force update file info
+        """
+        for directory in self.directories():
+            directory_path = pathlib.Path(directory.path)
+            if datetime.datetime.fromtimestamp(os.path.getmtime(str(directory_path))) > directory.last_scanned or force:
+                self.add_directory(directory.path, force)
+
     def add_directory(self, directory_path: str, force: bool = False):
         """Add a directory to the library.
 
@@ -67,6 +78,9 @@ class Database:
         logging.info(f"Scanning directory {directory_path}")
         for file_path in directory_path.glob('**/*.mp3'):
             self._process_file(self.session, directory_path, file_path, force)
+
+        # Save the changes
+        directory.last_scanned = datetime.datetime.now()
         self.session.commit()
 
     def remove_missing(self):
@@ -190,10 +204,9 @@ class Database:
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    # d.add_directory(os.path.expanduser('~/Music'), True)
-    d.remove_missing()
+    d.rescan()
 
 
 if __name__ == '__main__':

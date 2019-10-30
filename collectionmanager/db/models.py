@@ -16,6 +16,7 @@ class Directory(Base):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     path = sqlalchemy.Column(sqlalchemy.String)
+    last_scanned = sqlalchemy.Column(sqlalchemy.DateTime)
 
 
 class Artist(Base):
