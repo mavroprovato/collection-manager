@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import logging
 import os
@@ -5,8 +6,9 @@ import pathlib
 import sys
 import typing
 
-import sqlalchemy.orm
-from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.orm import sessionmaker, Session
 
 from collectionmanager.db import models
 
@@ -23,9 +25,9 @@ class Database:
         """
         self.base_dir = base_dir
         self.engine = self._get_engine()
-        self.session = sqlalchemy.orm.sessionmaker(bind=self.engine)()
+        self.session = sessionmaker(bind=self.engine)()
 
-    def _get_engine(self) -> sqlalchemy.engine.base.Engine:
+    def _get_engine(self) -> Engine:
         """Get the SQLAlchemy engine.
 
         :return: The SQLAlchemy engine.
@@ -35,7 +37,7 @@ class Database:
         db_file_path = pathlib.Path(self.base_dir) / self.db_file_name
         db_file_path.parent.mkdir(parents=True, exist_ok=True)
         # Create engine
-        engine = sqlalchemy.create_engine(f'sqlite:///{db_file_path}')
+        engine = create_engine(f'sqlite:///{db_file_path}')
         if not db_file_path.exists():
             # Crate the database if it does not exist
             logging.info("Database file does not exist, creating")
@@ -48,6 +50,8 @@ class Database:
 
         :param force: Force update file info
         """
+        logging.info("Rescanning the database")
+
         for directory in self.directories():
             directory_path = pathlib.Path(directory.path)
             if datetime.datetime.fromtimestamp(os.path.getmtime(str(directory_path))) > directory.last_scanned or force:
@@ -59,6 +63,8 @@ class Database:
         :param directory_path: The directory path.
         :param force: Force update file info
         """
+        logging.info(f"Adding directory {directory_path} with force = {force}")
+
         # Check if the provided path exists in the file system
         directory_path = pathlib.Path(directory_path).resolve()
         if not directory_path.exists():
@@ -86,6 +92,8 @@ class Database:
     def remove_missing(self):
         """Remove all missing tracks from the library
         """
+        logging.info(f"Removing missing files from the database")
+
         # Scan all tracks
         for track in self.tracks():
             track_path = pathlib.Path(track.directory.path, track.file_name)
@@ -93,6 +101,7 @@ class Database:
                 logging.info(f"File {track_path} does not exist")
                 logging.info(f"Deleting track")
                 self.session.delete(track)
+
         self.session.commit()
 
     def directories(self) -> typing.List[models.Directory]:
@@ -204,9 +213,27 @@ class Database:
 
 
 def main():
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    """The main entry point of the module.
+    """
+    parser = argparse.ArgumentParser(description='Perform database operations')
+    parser.add_argument('--log-level', default='INFO', help='The logging level')
+    parser.add_argument('--force', type=bool, default=False, help='If true, the action is forced without checking '
+                                                                  'modified times')
+    parser.add_argument('action', help='The action to perform.')
+    parser.add_argument('files', nargs='*', help='The files for which to perform the action')
+    args = parser.parse_args()
+
+    logging.basicConfig(stream=sys.stdout, level=args.log_level.upper())
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.rescan()
+    if args.action == 'rescan':
+        d.rescan(args.force)
+    elif args.action == 'remove_missing':
+        d.remove_missing()
+    elif args.action == 'add_directories':
+        for directory in args.files:
+            d.add_directory(directory, args.force)
+    else:
+        raise ValueError(f"Unknown action {args.action}")
 
 
 if __name__ == '__main__':
