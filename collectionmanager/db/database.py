@@ -42,10 +42,11 @@ class Database:
 
         return engine
 
-    def add_directory(self, directory_path: str):
+    def add_directory(self, directory_path: str, force: bool = False):
         """Add a directory to the library.
 
         :param directory_path: The directory path.
+        :param force: Force update file info
         """
         # Check if the provided path exists in the file system
         directory_path = pathlib.Path(directory_path).resolve()
@@ -65,7 +66,7 @@ class Database:
         # Scan the directory
         logging.info(f"Scanning directory {directory_path}")
         for file_path in directory_path.glob('**/*.mp3'):
-            self._process_file(self.session, directory_path, file_path)
+            self._process_file(self.session, directory_path, file_path, force)
         self.session.commit()
 
     def directories(self) -> typing.List[models.Directory]:
@@ -179,7 +180,7 @@ class Database:
 def main():
     logging.basicConfig(level=logging.INFO)
     d = Database(os.path.expanduser('~/.local/share/collection-manager'))
-    d.add_directory(os.path.expanduser('~/Music'))
+    d.add_directory(os.path.expanduser('~/Music'), True)
 
 
 if __name__ == '__main__':
