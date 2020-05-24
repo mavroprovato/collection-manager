@@ -22,7 +22,7 @@ pipenv run python -m collectionmanager.app
 License
 =======
 
-    Copyright (c) 2017-2019, Kostas Kokkoros
+    Copyright (c) 2017-2020, Kostas Kokkoros
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
