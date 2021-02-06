@@ -50,6 +50,29 @@ class AlbumArtFetcher:
         return self.cache[url]
 
 
+def clear_album_art(file_path: str) -> typing.NoReturn:
+    """Clears album art from a file.
+
+    :param file_path: The file path.
+    """
+    file_info = mutagen.File(file_path)
+    if 'APIC:' in file_info:
+        logging.debug("Clearing album art from file %s", file_path)
+        file_info.pop('APIC:')
+        file_info.save()
+
+
+def scan_directory(directory: str):
+    """Scan a directory.
+
+    :param directory: The directory to scan.
+    :return: Yields absolute file names from the directory.
+    """
+    for current_root_name, _, files in os.walk(directory):
+        for file_name in files:
+            yield os.path.join(current_root_name, file_name)
+
+
 def save_album_art(service, fetcher, file_path: str, force: bool = False) -> typing.NoReturn:
     """Save the album art for a file.
 
@@ -107,24 +130,16 @@ def main():
     if args.action == 'fetch':
         # Scan the input directory
         logging.info("Fetching album art for all files in %s", args.directory)
-        for current_root_name, _, files in os.walk(args.directory):
-            for file_name in files:
-                file_path = os.path.join(current_root_name, file_name)
-                save_album_art(service, fetcher, file_path, args.force)
+        for file_path in scan_directory(args.directory):
+            save_album_art(service, fetcher, file_path, args.force)
     elif args.action == 'clear':
         # Clear all album art files
-        logging.info("Clearing album art for all files in %s", args.directory)
         if not args.force:
             response = input("Are you sure you want to clear all album art (y/n)? ")
             if response == 'y':
-                logging.info("Clearing album art")
-                for current_root_name, _, files in os.walk(args.directory):
-                    for file_name in files:
-                        file_path = os.path.join(current_root_name, file_name)
-                        file_info = mutagen.File(file_path)
-                        if 'APIC:' in file_info:
-                            file_info.pop('APIC:')
-                            file_info.save()
+                logging.info("Clearing album art for all files in %s", args.directory)
+                for file_path in scan_directory(args.directory):
+                    clear_album_art(file_path)
 
 
 if __name__ == '__main__':
