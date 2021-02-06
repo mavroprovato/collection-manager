@@ -3,14 +3,13 @@ import io
 import logging
 import os
 import mutagen.id3
-import pathlib
 import requests
 import sys
 import typing
 
 from PIL import Image, UnidentifiedImageError
 
-from collectionmanager import db, services
+from collectionmanager import services
 
 
 class AlbumArtFetcher:
@@ -81,24 +80,28 @@ def save_album_art(service, fetcher, file_path: str, force: bool = False) -> typ
     :param file_path: The file path.
     :param force: Set to true in order to save the album art even if it exists.
     """
-    track_info = db.Track.from_id3(pathlib.Path(file_path))
+    file_info = mutagen.File(file_path)
+    album_artist = file_info['TPE2'][0] if 'TPE2' in file_info else None
+    album = file_info['TALB'][0] if 'TALB' in file_info else None
+    album_art = file_info['APIC:'] if 'APIC:' in file_info else None
 
-    if track_info['album_art'] is None or force:
+    if album_art is None or force:
         logging.info(f"Searching album art for file {file_path}")
-        if track_info['album_artist'] is None:
+        if album_artist is None:
             logging.warning('Album artist is missing, skipping file')
             return
-        if track_info['album'] is None:
+        if album is None:
             logging.warning('Album name is missing, skipping file')
             return
-        album_art = service.fetch_album_art(track_info['album_artist'], track_info['album'])
+        album_art = service.fetch_album_art(album_artist, album)
         if album_art:
             content, content_type = fetcher.fetch_album_art(album_art)
             if content and content_type:
                 file_info = mutagen.File(file_path)
                 file_info.tags.add(mutagen.id3.APIC(
                     encoding=mutagen.id3.Encoding.LATIN1, data=content, mime=content_type,
-                    type=mutagen.id3.PictureType.COVER_FRONT))
+                    type=mutagen.id3.PictureType.COVER_FRONT)
+                )
                 file_info.save()
                 logging.info('Album art saved')
             else:
