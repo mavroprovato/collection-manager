@@ -92,22 +92,39 @@ def main():
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("scan_dir", help="The directory to scan for files")
-    parser.add_argument("--force", action='store_true', help="Search for album art even if it exists")
+    parser.add_argument("action", choices=["fetch", "clear"], help="The action to perform")
+    parser.add_argument("directory", help="The directory to scan for files")
+    parser.add_argument("--force", action='store_true', help="Force the action")
     parser.add_argument("--api-key", help="The API key for the service")
     args = parser.parse_args()
 
     service = services.LastFmService(args.api_key)
     fetcher = AlbumArtFetcher()
 
-    # Scan the input directory
-    if not os.path.isdir(args.scan_dir):
+    if not os.path.isdir(args.directory):
         logging.error("%s is not a directory", args.scan_dir)
-    logging.info("Scanning directory %s", args.scan_dir)
-    for current_root_name, _, files in os.walk(args.scan_dir):
-        for file_name in files:
-            file_path = os.path.join(current_root_name, file_name)
-            save_album_art(service, fetcher, file_path, args.force)
+
+    if args.action == 'fetch':
+        # Scan the input directory
+        logging.info("Fetching album art for all files in %s", args.directory)
+        for current_root_name, _, files in os.walk(args.directory):
+            for file_name in files:
+                file_path = os.path.join(current_root_name, file_name)
+                save_album_art(service, fetcher, file_path, args.force)
+    elif args.action == 'clear':
+        # Clear all album art files
+        logging.info("Clearing album art for all files in %s", args.directory)
+        if not args.force:
+            response = input("Are you sure you want to clear all album art (y/n)? ")
+            if response == 'y':
+                logging.info("Clearing album art")
+                for current_root_name, _, files in os.walk(args.directory):
+                    for file_name in files:
+                        file_path = os.path.join(current_root_name, file_name)
+                        file_info = mutagen.File(file_path)
+                        if 'APIC:' in file_info:
+                            file_info.pop('APIC:')
+                            file_info.save()
 
 
 if __name__ == '__main__':
