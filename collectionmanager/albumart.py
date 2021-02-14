@@ -1,3 +1,5 @@
+"""Module to manage album art.
+"""
 import argparse
 import io
 import logging
@@ -11,8 +13,12 @@ from PIL import Image, UnidentifiedImageError
 
 from collectionmanager import services
 
+logger = logging.getLogger(__name__)
+
 
 class AlbumArtFetcher:
+    """The album fetcher
+    """
     def __init__(self) -> None:
         """Create the album art fetcher.
         """
@@ -34,7 +40,7 @@ class AlbumArtFetcher:
             if content_type != 'image/jpeg' and force_jpeg:
                 # Try to transform the image to JPEG if requested.
                 try:
-                    logging.info("Transforming image to JPEG")
+                    logger.info("Transforming image to JPEG")
                     image = Image.open(io.BytesIO(content))
                     image = image.convert('RGB')
                     content = io.BytesIO()
@@ -42,7 +48,7 @@ class AlbumArtFetcher:
                     content = content.getvalue()
                     content_type = 'image/jpeg'
                 except UnidentifiedImageError:
-                    logging.error("Could not decode file from %s", url)
+                    logger.error("Could not decode file from %s", url)
 
             self.cache[url] = (content, content_type)
 
@@ -56,7 +62,7 @@ def clear_album_art(file_path: str) -> typing.NoReturn:
     """
     file_info = mutagen.File(file_path)
     if 'APIC:' in file_info:
-        logging.debug("Clearing album art from file %s", file_path)
+        logger.info("Clearing album art from file %s", file_path)
         file_info.pop('APIC:')
         file_info.save()
 
@@ -86,12 +92,12 @@ def save_album_art(service, fetcher, file_path: str, force: bool = False) -> typ
     album_art = file_info['APIC:'] if 'APIC:' in file_info else None
 
     if album_art is None or force:
-        logging.info(f"Searching album art for file {file_path}")
+        logger.info(f"Searching album art for file {file_path}")
         if album_artist is None:
-            logging.warning('Album artist is missing, skipping file')
+            logger.warning('Album artist is missing, skipping file')
             return
         if album is None:
-            logging.warning('Album name is missing, skipping file')
+            logger.warning('Album name is missing, skipping file')
             return
         album_art = service.fetch_album_art(album_artist, album)
         if album_art:
