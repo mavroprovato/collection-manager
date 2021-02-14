@@ -113,7 +113,7 @@ def save_album_art(service, fetcher, file_path: str, force: bool = False) -> typ
             else:
                 logging.warning('Could not download album art')
         else:
-            logging.warning('No album art found, skipping')
+            logging.info('No album art found, skipping')
 
 
 def main():
@@ -134,7 +134,8 @@ def main():
     fetcher = AlbumArtFetcher()
 
     if not os.path.isdir(args.directory):
-        logging.error("%s is not a directory", args.scan_dir)
+        logging.error("%s is not a directory", args.directory)
+        return
 
     if args.action == 'fetch':
         # Scan the input directory

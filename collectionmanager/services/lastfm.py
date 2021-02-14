@@ -41,13 +41,13 @@ class LastFmService:
             # Get the album art if it exists
             data = response.json()
             if 'album' in data:
-                logger.info("Album art found")
+                logger.info("Album information found")
                 album_art = data['album']['image'][-1]['#text']
-            else:
-                logger.info("Could not find album art")
 
         # Save album art in cache
         if album_art:
             self.cache[(artist, album)]['album_art'] = album_art
+        else:
+            logger.info("Could not find album art")
 
         return album_art
