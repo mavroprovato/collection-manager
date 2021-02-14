@@ -1,8 +1,11 @@
 """Integration with last.fm
 """
 import collections
+import logging
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class LastFmService:
@@ -29,6 +32,7 @@ class LastFmService:
         album_art = self.cache.get((artist, album), {}).get('album_art', {})
         if not album_art:
             # Make the request for the album info
+            logger.info(f"Fetching album art for %s - %s", artist, album)
             response = requests.get(self.API_BASE, params={
                 'method': 'album.getinfo', 'api_key': self.api_key, 'artist': artist, 'album': album, 'format': 'json'
             })
@@ -37,9 +41,10 @@ class LastFmService:
             # Get the album art if it exists
             data = response.json()
             if 'album' in data:
-                for image in data['album']['image']:
-                    if image['size'] == 'large':
-                        album_art = image['#text']
+                logger.info("Album art found")
+                album_art = data['album']['image'][-1]['#text']
+            else:
+                logger.info("Could not find album art")
 
         # Save album art in cache
         if album_art:
