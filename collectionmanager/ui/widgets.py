@@ -10,15 +10,14 @@ from collectionmanager.ui.dialogs import TrackDetailDialog
 class MainWidget(QtWidgets.QWidget, main_widget.Ui_Form):
     """The main application widget
     """
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         """Constructor for the main application widget.
 
         :param parent: The parent widget.
-        :param db: The database.
         """
-        super(MainWidget, self).__init__(parent)
+        super().__init__(parent)
 
-        self.trackModel = models.TrackModel(self, db)
+        self.trackModel = models.TrackModel(self)
         self.trackDetailsDialog = TrackDetailDialog(self)
 
         self.setupUi()

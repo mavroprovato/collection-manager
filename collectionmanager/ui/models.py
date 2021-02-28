@@ -2,7 +2,7 @@ import PyQt5.Qt as Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
 
-from ..db.database import Database
+from collectionmanager import db
 
 
 class TrackModel(QtCore.QAbstractTableModel):
@@ -19,18 +19,14 @@ class TrackModel(QtCore.QAbstractTableModel):
         {'name': 'Track', 'source': 'name'},
     ]
 
-    def __init__(self, parent: QtWidgets.QWidget, db: Database):
+    def __init__(self, parent: QtWidgets.QWidget):
         """Create the track table model.
 
         :param parent: The parent window.
-        :param db: The database.
         """
         super().__init__(parent)
 
-        self.db = db
         self.rows = []
-
-        self.refresh()
 
     def headerData(self, section, orientation, role=None) -> Qt.QVariant:
         """Returns the data for the given role and section in the header with the specified orientation.
@@ -91,5 +87,5 @@ class TrackModel(QtCore.QAbstractTableModel):
     def refresh(self):
         """Refresh the model data from the database.
         """
-        self.rows = self.db.tracks()
+        self.rows = db.Database().tracks()
         self.layoutChanged.emit()

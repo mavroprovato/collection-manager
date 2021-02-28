@@ -2,10 +2,8 @@
 The main application window
 """
 import PyQt5.Qt as Qt
-import PyQt5.QtCore as QtCore
 import PyQt5.QtWidgets as QtWidgets
 
-import collectionmanager.db.database as database
 from collectionmanager.threads import scandirectory
 import collectionmanager.ui.ui.main_window as main_window
 from collectionmanager.ui.widgets import MainWidget
@@ -21,10 +19,8 @@ class MainWindow(QtWidgets.QMainWindow, main_window.Ui_MainWindow):
         """
         super(MainWindow, self).__init__(parent)
 
-        config_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation)
-        self.db = database.Database(config_dir)
-        self.mainWidget = MainWidget(self, self.db)
-        self.scanDirectoryThread = scandirectory.ScanDirectoryThread(self, self.db)
+        self.mainWidget = MainWidget(self)
+        self.scanDirectoryThread = scandirectory.ScanDirectoryThread(self)
 
         self.setupUi()
 

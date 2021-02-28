@@ -6,6 +6,7 @@ import pathlib
 import sys
 import typing
 
+from PyQt5 import QtCore
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -18,14 +19,10 @@ class Database:
     """
     db_file_name = 'db.sqlite'
 
-    def __init__(self, base_dir: str):
+    def __init__(self):
         """Create the database.
-
-        :param base_dir: The base directory where the database file will be created.
         """
-        self.base_dir = base_dir
         self.engine = self._get_engine()
-        self.session = sessionmaker(bind=self.engine)()
 
     def _get_engine(self) -> Engine:
         """Get the SQLAlchemy engine.
@@ -34,10 +31,11 @@ class Database:
         """
         logging.info("Creating SQLAlchemy engine")
         # Make sure the base directory exists
-        db_file_path = pathlib.Path(self.base_dir) / self.db_file_name
+        base_dir = QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation)
+        db_file_path = pathlib.Path(base_dir) / self.db_file_name
         db_file_path.parent.mkdir(parents=True, exist_ok=True)
         # Create engine
-        engine = create_engine(f'sqlite:///{db_file_path}')
+        engine = create_engine(f'sqlite:///{db_file_path}?check_same_thread=false')
         if not db_file_path.exists():
             # Crate the database if it does not exist
             logging.info("Database file does not exist, creating")
@@ -73,21 +71,22 @@ class Database:
             raise ValueError(f"Path {directory_path} is not a directory")
 
         # Check if the directory exists in the database
-        directory = self.session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
+        session = sessionmaker(bind=self.engine)()
+        directory = session.query(models.Directory).filter(models.Directory.path == str(directory_path)).first()
         if directory is None:
             logging.debug("Directory does not exist, creating")
             directory = models.Directory(path=str(directory_path))
-            self.session.add(directory)
-            self.session.commit()
+            session.add(directory)
+            session.commit()
 
         # Scan the directory
         logging.info(f"Scanning directory {directory_path}")
         for file_path in directory_path.glob('**/*.mp3'):
-            self._process_file(self.session, directory_path, file_path, force)
+            self._process_file(session, directory_path, file_path, force)
 
         # Save the changes
         directory.last_scanned = datetime.datetime.now()
-        self.session.commit()
+        session.commit()
 
     def remove_missing(self):
         """Remove all missing tracks from the library
@@ -95,30 +94,33 @@ class Database:
         logging.info(f"Removing missing files from the database")
 
         # Scan all tracks
+        session = sessionmaker(bind=self.engine)()
         for track in self.tracks():
             track_path = pathlib.Path(track.directory.path, track.file_name)
             if not track_path.exists():
                 logging.info(f"File {track_path} does not exist")
                 logging.info(f"Deleting track")
-                self.session.delete(track)
+                session.delete(track)
 
-        self.session.commit()
+        session.commit()
 
     def directories(self) -> typing.List[models.Directory]:
         """Return the directories in the database.
 
         :return: A list with the directories.
         """
-        return self.session.query(models.Directory).all()
+        session = sessionmaker(bind=self.engine)()
+
+        return session.query(models.Directory).all()
 
     def artists(self, order_by: str = 'name') -> typing.List[models.Artist]:
         """Return the tracks in the database.
 
         :return: A list with the tracks.
         """
-        query = self.session.query(models.Artist)
+        session = sessionmaker(bind=self.engine)()
 
-        return query.order_by(order_by)
+        return session.query(models.Artist).order_by(order_by)
 
     def tracks(self, artist: models.Artist = None, directory: models.Directory = None) -> typing.List[models.Track]:
         """Return the tracks in the database.
@@ -127,7 +129,8 @@ class Database:
         :param directory: The directory to filter by.
         :return: A list with the tracks.
         """
-        query = self.session.query(models.Track)
+        session = sessionmaker(bind=self.engine)()
+        query = session.query(models.Track)
         if directory is not None:
             query = query.filter(models.Track.directory == directory)
         if artist is not None:
@@ -224,7 +227,7 @@ def main():
     args = parser.parse_args()
 
     logging.basicConfig(stream=sys.stdout, level=args.log_level.upper())
-    d = Database(os.path.expanduser('~/.local/share/collection-manager'))
+    d = Database()
     if args.action == 'rescan':
         d.rescan(args.force)
     elif args.action == 'remove_missing':

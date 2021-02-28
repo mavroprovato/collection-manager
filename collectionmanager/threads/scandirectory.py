@@ -2,21 +2,21 @@
 """
 import PyQt5.QtCore as QtCore
 
+from collectionmanager import db
+
 
 class ScanDirectoryThread(QtCore.QThread):
     """Background thread that scans directories for media files
     """
     directoryScanned = QtCore.pyqtSignal()
 
-    def __init__(self, parent, db):
+    def __init__(self, parent):
         """The thread constructor.
 
         :param parent: The parent directory.
-        :param db: The database connection.
         """
-        super(ScanDirectoryThread, self).__init__(parent)
+        super().__init__(parent)
 
-        self.db = db
         self.directory = None
 
     def scan_directory(self, directory):
@@ -32,7 +32,6 @@ class ScanDirectoryThread(QtCore.QThread):
     def run(self):
         """The main thread actions.
         """
-        self.db.add_directory(self.directory)
-        self.db.save()
+        db.Database().add_directory(self.directory)
 
         self.directoryScanned.emit()
