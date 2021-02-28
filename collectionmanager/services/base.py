@@ -8,7 +8,7 @@ import logging
 
 from PIL import Image, UnidentifiedImageError
 import requests
-
+from requests import HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,11 @@ class BaseService(abc.ABC):
         """
         # Get the image content from the URL
         response = requests.get(url)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            logger.warning("Could not fetch image %s", url)
+            return None
         content = response.content
         content_type = response.headers['Content-Type']
         # Transform the image to JPEG if needed
