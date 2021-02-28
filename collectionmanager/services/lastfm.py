@@ -14,6 +14,7 @@ class LastFmService(base.BaseService):
     """Connector for the last.fm service
     """
     API_ROOT = 'https://ws.audioscrobbler.com/2.0/'
+    USER_AGENT = 'collection-manager/0.0.1 (https://github.com/mavroprovato/collection-manager)'
 
     def __init__(self, api_key: str):
         """Create the last.fm service.
