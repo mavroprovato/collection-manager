@@ -42,11 +42,12 @@ def fetch_album_art(input_dir: str, service, force: bool = False):
         track_info = services.TrackInfo(str(file_path))
         if track_info.album_art is None or force:
             album_art = service.album_art(track_info.album_artist, track_info.album)
-            track_info.file_info.tags.add(mutagen.id3.APIC(
-                encoding=mutagen.id3.Encoding.LATIN1, data=album_art, mime="image/jpeg",
-                type=mutagen.id3.PictureType.COVER_FRONT)
-            )
-            track_info.file_info.save()
+            if album_art:
+                track_info.file_info.tags.add(mutagen.id3.APIC(
+                    encoding=mutagen.id3.Encoding.LATIN1, data=album_art, mime="image/jpeg",
+                    type=mutagen.id3.PictureType.COVER_FRONT)
+                )
+                track_info.file_info.save()
 
 
 def export_album_art(input_dir: str, service, output_dir: str, force: bool = False):
