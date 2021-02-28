@@ -49,23 +49,26 @@ def fetch_album_art(input_dir: str, service, force: bool = False):
             track_info.file_info.save()
 
 
-def export_album_art(input_dir: str, service, output_dir: str):
+def export_album_art(input_dir: str, service, output_dir: str, force: bool = False):
     """Export album art to a directory.
 
     :param input_dir: The input directory.
     :param service: The service to use in order to fetch album art.
     :param output_dir:
+    :param force: Set to true in order to save the album art even if it exists.
     :return:
     """
     logging.info("Exporting album art for all files in %s to directory %s", input_dir, output_dir)
     for file_path in pathlib.Path(input_dir).glob('**/*.mp3'):
         track_info = services.TrackInfo(str(file_path))
         art_output_dir = pathlib.Path(output_dir) / track_info.album_artist / track_info.album
-        art_output_dir.mkdir(parents=True, exist_ok=True)
-        album_art = service.album_art(track_info.album_artist, track_info.album)
-        if album_art:
-            with open(art_output_dir / "AlbumArt.jpg", "wb") as f:
-                f.write(album_art)
+        album_art_file = art_output_dir / "AlbumArt.jpg"
+        if not album_art_file.exists() or force:
+            album_art = service.album_art(track_info.album_artist, track_info.album)
+            if album_art:
+                art_output_dir.mkdir(parents=True, exist_ok=True)
+                with open(art_output_dir / "AlbumArt.jpg", "wb") as f:
+                    f.write(album_art)
 
 
 def main():
@@ -96,7 +99,7 @@ def main():
         clear_album_art(args.directory, args.force)
     elif args.action == 'export':
         if args.output:
-            export_album_art(args.directory, service, args.output)
+            export_album_art(args.directory, service, args.output, args.force)
         else:
             print("You must specify an output directory")
 
