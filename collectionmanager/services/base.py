@@ -1,6 +1,12 @@
 import abc
 import collections
+import io
+import typing
 import logging
+
+from PIL import Image, UnidentifiedImageError
+import requests
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,3 +42,31 @@ class BaseService(abc.ABC):
     @abc.abstractmethod
     def fetch_album_art(self, artist: str, album: str) -> bytes:
         pass
+
+    @staticmethod
+    def fetch_image_from_url(url: str) -> typing.Optional[bytes]:
+        """Fetch an image from a URL. The image is transformed to JPEG if needed.
+
+        :param url: The image URL.
+        :return: The image.
+        """
+        # Get the image content from the URL
+        response = requests.get(url)
+        response.raise_for_status()
+        content = response.content
+        content_type = response.headers['Content-Type']
+        # Transform the image to JPEG if needed
+        if content_type != 'image/jpeg':
+            try:
+                logger.info("Transforming image to JPEG")
+                image = Image.open(io.BytesIO(content))
+                image = image.convert('RGB')
+                output = io.BytesIO()
+                image.save(output, format='JPEG')
+
+                content = output.getvalue()
+            except UnidentifiedImageError:
+                logger.error("Could not decode file fetched from %s", url)
+                return None
+
+        return content
