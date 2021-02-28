@@ -43,7 +43,7 @@ class LastFmService:
 
                 return album_art
             else:
-                logger.info("Album art not found")
+                logger.warning("Album art not found")
 
     def fetch_album_art(self, artist: str, album: str) -> bytes:
         """Fetch album art.
