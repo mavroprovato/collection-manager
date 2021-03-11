@@ -42,4 +42,5 @@ class LastFmService(base.BaseService):
         if 'album' in data:
             url = data['album']['image'][-1]['#text']
 
-            return self.fetch_image_from_url(url)
+            if url:
+                return self.fetch_image_from_url(url)
