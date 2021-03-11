@@ -28,7 +28,7 @@ def main():
             save = False
 
             # Check track number
-            if 'TRCK' not in track_info.file_info:
+            if not track_info.number:
                 logger.info("Track number missing from %s, setting.", file_path)
                 file_track_info = file_name[:file_name.find('.')].strip()
                 track_number = int(file_track_info[file_track_info.find('-') - 1:])
@@ -36,7 +36,7 @@ def main():
                 track_info.file_info['TRCK'] = mutagen.id3.TRCK(
                     encoding=mutagen.id3.Encoding.LATIN1, text=str(track_number))
                 save = True
-            elif track_info.file_info['TRCK'][0].startswith('0'):
+            elif track_info.number.startswith('0'):
                 logger.info("Track number for %s contains a leading zero, stripping.", file_path)
                 track_number = int(track_info.file_info['TRCK'][0])
                 track_info.file_info['TRCK'] = mutagen.id3.TRCK(
@@ -44,7 +44,7 @@ def main():
                 save = True
 
             # Check for disk number
-            if 'TPOS' not in track_info.file_info:
+            if not track_info.disk_number:
                 logger.info("Disc number missing from %s, setting.", file_path)
                 file_track_info = file_name[:file_name.find('.')].strip()
                 disc_number_str = file_track_info[:file_track_info.find('-') + 1].strip()
@@ -54,11 +54,10 @@ def main():
                 save = True
 
             # Set the album artist
-            if 'TPE2' not in track_info.file_info:
+            if not track_info.album_artist:
                 logger.info("Album artist missing from %s, setting.", file_path)
-                track_artist = track_info.file_info['TPE1'][0]
                 track_info.file_info['TPE2'] = mutagen.id3.TPE2(
-                    encoding=mutagen.id3.Encoding.UTF8, text=str(track_artist))
+                    encoding=mutagen.id3.Encoding.UTF8, text=str(track_info.artist))
                 save = True
 
             if save:

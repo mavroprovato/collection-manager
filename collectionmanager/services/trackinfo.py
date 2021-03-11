@@ -19,6 +19,7 @@ class TrackInfo:
         self.album_artist = self.file_info['TPE2'][0] if 'TPE2' in self.file_info else None
         self.album = self.file_info['TALB'][0] if 'TALB' in self.file_info else None
         self.year = self.file_info['TDRC'][0].get_text() if 'TDRC' in self.file_info else None
+        self.genre = self.file_info['TCON'][0] if 'TCON' in self.file_info else None
         self.album_art = self.file_info['APIC:'] if 'APIC:' in self.file_info else None
         self.number = self.file_info['TRCK'][0] if 'TRCK' in self.file_info else None
         self.disk_number = self.file_info['TPOS'][0] if 'TPOS' in self.file_info else None
