@@ -1,4 +1,3 @@
-import abc
 import collections
 import datetime
 import io
@@ -13,7 +12,7 @@ from requests import HTTPError
 logger = logging.getLogger(__name__)
 
 
-class BaseService(abc.ABC):
+class BaseService:
     """Abstract base class for services
     """
     MIN_SECS_BETWEEN_REQUESTS = 0
@@ -22,35 +21,60 @@ class BaseService(abc.ABC):
         self._last_request_time = None
         self._release_cache = collections.defaultdict(dict)
 
-    def album_art(self, artist: str, album: str):
+    def album_art(self, artist: str, album: str) -> typing.Optional[bytes]:
         """Get the album art for a release.
 
         :param artist: The artist name.
         :param album: The album art.
+        :return: The album art.
+        """
+        return self._get_info(artist, album, 'album_art', 'Album art')
+
+    def genre(self, artist: str, album: str) -> typing.Optional[str]:
+        """Get the genre a release.
+
+        :param artist: The artist name.
+        :param album: The album art.
+        :return: The genre.
+        """
+        return self._get_info(artist, album, 'genre', 'Genre')
+
+    def _get_info(self, artist: str, album: str, key: str, description: str):
+        """Gets the required album info. First checks in the local cache, and if the info is not found, it queries the
+        service.
+
+        :param artist: The artist name.
+        :param album: The album name.
+        :param key: The key of the information to get.
+        :param description: The description of the key.
         :return:
         """
-        album_art = self._release_cache.get((artist, album), {}).get('album_art')
-        if album_art:
-            logger.debug("Album art found in cache")
-            return album_art
+        if not artist:
+            logger.warning("Artist not set, cannot fetch info")
+            return None
+        if not album:
+            logger.warning("Album not set, cannot fetch info")
+            return None
+
+        info = self._release_cache.get((artist, album), {}).get(key)
+        if info:
+            logger.debug("% found in cache", description)
+
+            return info
         else:
-            logger.info("Fetching album art for artist '%s' and album '%s' from service", artist, album)
-            album_art = self.fetch_album_art(artist, album)
-            if album_art:
-                logger.info("Album art found")
-                self._release_cache[(artist, album)]['album_art'] = album_art
+            logger.info("Fetching %s for artist %s and album %s from service", description, artist, album)
+            info = getattr(self, f'fetch_{key}')(artist, album)
+            if info:
+                logger.info("%s found", description)
+                self._release_cache[(artist, album)][key] = info
 
-                return album_art
+                return info
             else:
-                logger.warning("Album art not found")
-
-    @abc.abstractmethod
-    def fetch_album_art(self, artist: str, album: str) -> typing.Optional[bytes]:
-        pass
+                logger.warning("%s not found", description)
 
     def perform_request(self, url: str, params: dict = None, headers: dict = None) -> dict:
-        """Performs a request to the musicbrainz API. Makes sure that requests do not happen more frequently than the
-        parameter MIN_SECS_BETWEEN_REQUESTS dictates.
+        """Performs a request to the service API. This method makes sure that requests do not happen more frequently
+        than the parameter MIN_SECS_BETWEEN_REQUESTS dictates.
 
         :param url: The url for the request.
         :param params: The request parameters.

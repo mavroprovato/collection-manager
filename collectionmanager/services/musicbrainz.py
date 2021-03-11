@@ -1,8 +1,6 @@
 """Integration with musicbrainz.
 """
-import datetime
 import logging
-import time
 import typing
 
 import requests

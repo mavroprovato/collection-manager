@@ -24,7 +24,7 @@ def clear_album_art(input_dir: str, force: bool = False):
             logging.info("Clearing album art for all files in %s", input_dir)
             for file_path in pathlib.Path(input_dir).glob('**/*.mp3'):
                 track_info = services.TrackInfo(str(file_path))
-                if 'APIC:' in track_info.file_info:
+                if track_info.album_art:
                     logger.info("Clearing album art from file %s", file_path)
                     track_info.file_info.pop('APIC:')
                     track_info.file_info.save()
@@ -94,7 +94,6 @@ def main():
         return
 
     if args.action == 'fetch':
-        logging.info("Updating album art for files in directory %s", args.directory)
         fetch_album_art(args.directory, service, args.force)
     elif args.action == 'clear':
         clear_album_art(args.directory, args.force)

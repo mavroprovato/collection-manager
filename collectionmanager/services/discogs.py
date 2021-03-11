@@ -13,7 +13,7 @@ class DiscogsService(base.BaseService):
     """
     API_ROOT = 'https://api.discogs.com'
     USER_AGENT = 'collection-manager/0.0.1 +https://github.com/mavroprovato/collection-manager'
-    MIN_SECS_BETWEEN_REQUESTS = 1
+    MIN_SECS_BETWEEN_REQUESTS = 2
 
     def __init__(self, token: str):
         """Create the discogs service.
@@ -33,9 +33,25 @@ class DiscogsService(base.BaseService):
         response = self.perform_request(f"{self.API_ROOT}/database/search", params={
             'artist': artist.replace(',', ' '), 'release_title': album.replace(',', ' '), 'token': self._token
         }, headers={'User-Agent': self.USER_AGENT})
+
         for result in response['results']:
             url = result.get('cover_image')
             if url:
                 image = self.fetch_image_from_url(url)
                 if image:
                     return image
+
+    def fetch_genre(self, artist: str, album: str) -> typing.Optional[bytes]:
+        """Fetch album genre.
+
+        :param artist: The artist name.
+        :param album: The album name.
+        :return The album art if found.
+        """
+        response = self.perform_request(f"{self.API_ROOT}/database/search", params={
+            'artist': artist.replace(',', ' '), 'release_title': album.replace(',', ' '), 'token': self._token
+        }, headers={'User-Agent': self.USER_AGENT})
+
+        for result in response['results']:
+            if 'style' in result and result['style']:
+                return result['style'][0]
