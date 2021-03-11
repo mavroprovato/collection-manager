@@ -53,6 +53,14 @@ def main():
                     encoding=mutagen.id3.Encoding.LATIN1, text=str(disc_number))
                 save = True
 
+            # Set the album artist
+            if 'TPE2' not in track_info.file_info:
+                logger.info("Album artist missing from %s, setting.", file_path)
+                track_artist = track_info.file_info['TPE1'][0]
+                track_info.file_info['TPE2'] = mutagen.id3.TPE2(
+                    encoding=mutagen.id3.Encoding.UTF8, text=str(track_artist))
+                save = True
+
             if save:
                 track_info.file_info.save()
 
