@@ -43,6 +43,16 @@ def main():
                     encoding=mutagen.id3.Encoding.LATIN1, text=str(track_number))
                 save = True
 
+            # Check for disk number
+            if 'TPOS' not in track_info.file_info:
+                logger.info("Disc number missing from %s, setting.", file_path)
+                file_track_info = file_name[:file_name.find('.')].strip()
+                disc_number_str = file_track_info[:file_track_info.find('-') + 1].strip()
+                disc_number = int(disc_number_str) if disc_number_str else 1
+                track_info.file_info['TPOS'] = mutagen.id3.TPOS(
+                    encoding=mutagen.id3.Encoding.LATIN1, text=str(disc_number))
+                save = True
+
             if save:
                 track_info.file_info.save()
 
