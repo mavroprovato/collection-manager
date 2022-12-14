@@ -90,8 +90,8 @@ class Track(Base):
             'length': file_info.info.length,
             'encoder_info': {
                 'bitrate': file_info.info.bitrate,
-                'bitrate_mode': str(file_info.info.bitrate_mode),
-                'sample_rate': file_info.info. sample_rate,
-                'encoder_info': file_info.info.encoder_info,
+                'bitrate_mode': str(file_info.info.bitrate_mode) if hasattr(file_info.info, 'bitrate_mode') else None,
+                'sample_rate': file_info.info.sample_rate,
+                'encoder_info': file_info.info.encoder_info if hasattr(file_info.info, 'encoder_info') else None,
             }
         }
