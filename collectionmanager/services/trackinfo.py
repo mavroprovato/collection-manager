@@ -29,6 +29,8 @@ class TrackInfo:
     title: str = None
     number: int = None
     file_info: dict = None
+    album_art_format: str = None
+    album_art: bytes = None
 
     @staticmethod
     def from_file(file: pathlib.Path) -> 'TrackInfo':
@@ -61,6 +63,9 @@ class TrackInfo:
                 except ValueError:
                     pass
             track_info.title = track_info.file_info['TIT2'][0] if 'TIT2' in track_info.file_info else None
+            if 'APIC:' in track_info.file_info:
+                track_info.album_art_format = track_info.file_info['APIC:'].mime
+                track_info.album_art = track_info.file_info['APIC:'].data
         elif isinstance(track_info.file_info, mutagen.flac.FLAC):
             track_info.type = FileType.FLAC
             track_info.artist = track_info.file_info['artist'][0] if 'artist' in track_info.file_info else None
@@ -83,5 +88,16 @@ class TrackInfo:
                 except ValueError:
                     pass
             track_info.title = track_info.file_info['title'][0] if 'title' in track_info.file_info else None
+            if track_info.file_info.pictures:
+                track_info.album_art_format = track_info.file_info.pictures[0].mime
+                track_info.album_art = track_info.file_info.pictures[0].data
 
         return track_info
+
+    @property
+    def album_art_exists(self) -> bool:
+        """Check if album art exists.
+
+        :return: True if album art exists, False otherwise.
+        """
+        return self.album_art_format is not None
