@@ -1,16 +1,25 @@
 import argparse
+import itertools
 import logging
-import os
 import pathlib
 import re
 import sys
 
-from collectionmanager.db.models import Track
+from collectionmanager.services import trackinfo
 
-WINDOWS_UNSAFE_PATTERN = re.compile(r'[<>:"/\\|?*]')
+# Logger for this module
+logger = logging.getLogger(__name__)
+
+# Unsafe characters for file naming
+UNSAFE_CHARACTERS = re.compile(r'[<>:"/\\|?*]')
+# The character to replace for unsafe charters
+UNSAFE_CHARACTERS_REPLACE = '_'
+# The file name pattern
+FILE_NAME_PATTERN = re.compile(
+    r'(?P<artist>[^/]+)/\[(?P<year>[0-9]{4})] (?P<album>[^/]+)/([0-9\-]+)\. (.+).(?P<type>mp3|flac)')
 
 
-def first_letter_capital(name: str) -> bool:
+def check_capitalisation(name: str) -> bool:
     """Check if the first letter of every word is a capital letter.
 
     :param name: The name to check.
@@ -24,123 +33,44 @@ def first_letter_capital(name: str) -> bool:
     return True
 
 
-def safe_windows_naming(file_path: str) -> bool:
-    """Check if a file path is safe for Windows file system. The following characters should not appear:
+def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
+    """Check if the file contains usafe characters.
 
-        < (less than)
-        >(greater than)
-        : (colon)
-        " (double quote)
-        / (forward slash)
-        \\ (backslash)
-        | (vertical bar or pipe)
-        ? (question mark)
-        * (asterisk)
-
-    :param file_path:
-    :return:
+    :param scan_dir: The scan directory
+    :param file: The file
     """
-    for file_component in file_path.split(os.sep):
-        if WINDOWS_UNSAFE_PATTERN.findall(file_component):
-            return False
+    logger.info("Checking file '%s", file)
+    for part in file.relative_to(scan_dir).parts:
+        if UNSAFE_CHARACTERS.findall(part):
+            logger.warning(f"'%s' contains unsafe file name characters", file)
+    # Parse track information
+    track_info = trackinfo.TrackInfo.from_file(pathlib.Path(file))
 
-    return True
+    # Check track artist
+    if not track_info.artist:
+        logger.warning("Artist info is missing for file '%s", file)
+    elif not check_capitalisation(track_info.artist):
+        logger.warning("Artist capitalization is wrong for file '%s': %s", file, track_info.artist)
 
-
-def check_file(file_path: str) -> None:
-    """Check a file, and print any errors that are found.
-
-    :param file_path: The absolute file path.
-    """
-    logging.info(f"Checking file {file_path}")
-    track_info = Track.from_id3(pathlib.Path(file_path))
-
-    # Check for safe windows characters
-    if not safe_windows_naming(file_path):
-        logging.warning("Name of file %s is not safe for Windows", file_path)
-
-    # Check artist
-    if track_info['track_artist'] is None:
-        logging.warning(f"Track artist name missing for {file_path}")
-    else:
-        # Check if capitalization of artist is correct
-        if not first_letter_capital(track_info['track_artist']):
-            logging.warning(f"Capitalization for track artist of file {file_path} is not correct")
-
-    # Check album artist
-    if track_info['album_artist'] is None:
-        logging.warning(f"Album artist name missing for {file_path}")
-    else:
-        # Check if capitalization of album artist is correct
-        if not first_letter_capital(track_info['album_artist']):
-            logging.warning("Capitalization for album artist of file %s is not correct", file_path)
-
-    # Check album
-    if track_info['album'] is None:
-        logging.warning(f"Album name missing for {file_path}")
-    else:
-        if not first_letter_capital(track_info['album']):
-            logging.warning("Capitalization for album of file %s is not correct", file_path)
-
-    # Check track name
-    if track_info['name'] is None:
-        logging.warning(f"Track name missing for {file_path}")
-    else:
-        if not first_letter_capital(track_info['name']):
-            logging.warning(f"Capitalization for track name of file {file_path} is not correct")
+    # Check track album
+    if not track_info.album:
+        logger.warning("Track album is missing for file '%s", file)
+    elif not check_capitalisation(track_info.album):
+        logger.warning("Track album capitalization is wrong for file '%s': %s", file, track_info.album)
 
     # Check track year
-    if track_info['year'] is None:
-        logging.warning(f"Track year missing for {file_path}")
-    else:
-        try:
-            int(track_info['year'])
-        except ValueError:
-            logging.warning(f"Track year is not a number for {file_path}")
+    if not track_info.year:
+        logger.warning("Track year is missing for file '%s", file)
 
     # Check track number
-    if track_info['number'] is None:
-        logging.warning(f"Track number missing for {file_path}")
-    else:
-        try:
-            int(track_info['number'])
-        except ValueError:
-            logging.warning(f"Track number is not a number for {file_path}")
+    if not track_info.number:
+        logger.warning("Track number is missing for file '%s", file)
 
-    # Check track disk number
-    if track_info['disk_number'] is None:
-        logging.warning(f"Disc number missing for {file_path}")
-    else:
-        try:
-            int(track_info['disk_number'])
-        except ValueError:
-            logging.warning(f"Disk number is not a number for {file_path}")
-
-    # Check album art
-    if track_info['album_art'] is None:
-        logging.warning(f"Album art missing for {file_path}")
-
-    # Check file naming
-    file_name = os.path.basename(file_path)
-    file_track_name = file_name[file_name.find('.')+2:file_name.rfind('.')]
-    if track_info['album'] is not None and track_info['year'] is not None:
-        album_dir_name = f"[{track_info['year']}] {WINDOWS_UNSAFE_PATTERN.sub('_', track_info['album'])}"
-        parent_dir_name = os.path.basename(os.path.dirname(file_path))
-        if album_dir_name != parent_dir_name:
-            logging.warning(f"Parent directory for file {file_path} is not correct, should be {album_dir_name}")
-    target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['name'])
-    if track_info['album_artist'] != track_info['track_artist']:
-        target_track_name = WINDOWS_UNSAFE_PATTERN.sub('_', track_info['track_artist'] + ' - ' + target_track_name)
-    if file_track_name != target_track_name:
-        logging.warning(f"File name is not correct for file {file_path}, track name should be {target_track_name}")
-    if track_info['number'] is not None:
-        try:
-            int(track_info['number'])
-            target_file_name = '{:02d}. {}.mp3'.format(int(track_info['number']), target_track_name)
-            if not file_name.endswith(target_file_name):
-                logging.warning(f"File name {file_name} is not correct, should be {target_file_name} ")
-        except ValueError:
-            pass
+    # Check track title
+    if not track_info.title:
+        logger.warning("Track title is missing for file '%s", file)
+    elif not check_capitalisation(track_info.title):
+        logger.warning("Track title capitalization is wrong for file '%s': %s", file, track_info.title)
 
 
 def main():
@@ -154,10 +84,9 @@ def main():
     parser.add_argument("scan_dir", help="The directory to scan for files")
     args = parser.parse_args()
 
-    for current_root_name, _, files in os.walk(args.scan_dir):
-        for file_name in files:
-            file_path = os.path.join(current_root_name, file_name)
-            check_file(file_path)
+    scan_dir = pathlib.Path(args.scan_dir)
+    for file in itertools.chain(scan_dir.rglob('*.flac'), scan_dir.rglob('*.mp3')):
+        check_file(scan_dir, file)
 
 
 if __name__ == '__main__':

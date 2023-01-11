@@ -1,25 +1,76 @@
 """Track information
 """
+import dataclasses
+import pathlib
+
 import mutagen
+import mutagen.mp3
+import mutagen.flac
 
 
+@dataclasses.dataclass
 class TrackInfo:
-    """Holds information about a music track
+    """Class holding the track information
     """
-    def __init__(self, file_path: str):
-        """Load ID3 track information from an MP3 file.
+    artist: str = None
+    album_artist: str = None
+    album: str = None
+    year: int = None
+    disk_number: int = None
+    title: str = None
+    number: int = None
+    file_info: dict = None
 
-        :param file_path: The file path.
-        :return: A dictionary with the track information.
+    @staticmethod
+    def from_file(file: pathlib.Path) -> 'TrackInfo':
+        """Read the track information from a file.
+
+        :param file: The file.
+        :return: The track information
         """
-        self.file_info = mutagen.File(file_path)
+        track_info = TrackInfo()
+        track_info.file_info = mutagen.File(file)
 
-        self.name = self.file_info['TIT2'][0] if 'TIT2' in self.file_info else None
-        self.artist = self.file_info['TPE1'][0] if 'TPE1' in self.file_info else None
-        self.album_artist = self.file_info['TPE2'][0] if 'TPE2' in self.file_info else None
-        self.album = self.file_info['TALB'][0] if 'TALB' in self.file_info else None
-        self.year = self.file_info['TDRC'][0].get_text() if 'TDRC' in self.file_info else None
-        self.genre = self.file_info['TCON'][0] if 'TCON' in self.file_info else None
-        self.album_art = self.file_info['APIC:'] if 'APIC:' in self.file_info else None
-        self.number = self.file_info['TRCK'][0] if 'TRCK' in self.file_info else None
-        self.disk_number = self.file_info['TPOS'][0] if 'TPOS' in self.file_info else None
+        if isinstance(track_info.file_info, mutagen.mp3.MP3):
+            track_info.artist = track_info.file_info['TPE1'][0] if 'TPE1' in track_info.file_info else None
+            track_info.album_artist = track_info.file_info['TPE2'][0] if 'TPE2' in track_info.file_info else None
+            track_info.album = track_info.file_info['TALB'][0] if 'TALB' in track_info.file_info else None
+            if 'TDRC' in track_info.file_info:
+                try:
+                    track_info.year = int(str(track_info.file_info['TDRC'][0]))
+                except ValueError:
+                    pass
+            if 'TPOS' in track_info.file_info:
+                try:
+                    track_info.disk_number = int(str(track_info.file_info['TPOS'][0]))
+                except ValueError:
+                    pass
+            if 'TRCK' in track_info.file_info:
+                try:
+                    track_info.number = int(str(track_info.file_info['TPOS'][0]))
+                except ValueError:
+                    pass
+            track_info.title = track_info.file_info['TIT2'][0] if 'TIT2' in track_info.file_info else None
+        elif isinstance(track_info.file_info, mutagen.flac.FLAC):
+            track_info.artist = track_info.file_info['artist'][0] if 'artist' in track_info.file_info else None
+            track_info.album_artist = track_info.file_info['albumartist'][0] if 'albumartist' in track_info.file_info \
+                else None
+            track_info.album = track_info.file_info['album'][0] if 'album' in track_info.file_info else None
+            if 'date' in track_info.file_info:
+                try:
+                    track_info.year = int(str(track_info.file_info['date'][0]))
+                except ValueError:
+                    pass
+            if 'discnumber' in track_info.file_info:
+                try:
+                    track_info.disk_number = int(str(track_info.file_info['discnumber'][0]))
+                except ValueError:
+                    pass
+            if 'tracknumber' in track_info.file_info:
+                try:
+                    track_info.number = int(str(track_info.file_info['tracknumber'][0]))
+                except ValueError:
+                    pass
+            track_info.title = track_info.file_info['title'][0] if 'title' in track_info.file_info else None
+
+        return track_info
