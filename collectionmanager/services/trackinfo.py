@@ -1,6 +1,7 @@
 """Track information
 """
 import dataclasses
+import enum
 import pathlib
 
 import mutagen
@@ -8,10 +9,18 @@ import mutagen.mp3
 import mutagen.flac
 
 
+class FileType(enum.Enum):
+    """Enumeration for supported file types
+    """
+    MP3 = 'mp3'
+    FLAC = 'flac'
+
+
 @dataclasses.dataclass
 class TrackInfo:
     """Class holding the track information
     """
+    type = FileType = None
     artist: str = None
     album_artist: str = None
     album: str = None
@@ -32,6 +41,7 @@ class TrackInfo:
         track_info.file_info = mutagen.File(file)
 
         if isinstance(track_info.file_info, mutagen.mp3.MP3):
+            track_info.type = FileType.MP3
             track_info.artist = track_info.file_info['TPE1'][0] if 'TPE1' in track_info.file_info else None
             track_info.album_artist = track_info.file_info['TPE2'][0] if 'TPE2' in track_info.file_info else None
             track_info.album = track_info.file_info['TALB'][0] if 'TALB' in track_info.file_info else None
@@ -52,6 +62,7 @@ class TrackInfo:
                     pass
             track_info.title = track_info.file_info['TIT2'][0] if 'TIT2' in track_info.file_info else None
         elif isinstance(track_info.file_info, mutagen.flac.FLAC):
+            track_info.type = FileType.FLAC
             track_info.artist = track_info.file_info['artist'][0] if 'artist' in track_info.file_info else None
             track_info.album_artist = track_info.file_info['albumartist'][0] if 'albumartist' in track_info.file_info \
                 else None
