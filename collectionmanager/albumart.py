@@ -1,13 +1,17 @@
 """Module to manage album art.
 """
 import argparse
+import itertools
 import logging
 import os
 import pathlib
-import mutagen.id3
 import sys
 
+import mutagen.id3
+import mutagen.flac
+
 from collectionmanager import services
+from collectionmanager.services import FileType
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +26,15 @@ def clear_album_art(input_dir: str, force: bool = False):
         response = input("Are you sure you want to clear all album art (y/n)? ")
         if response == 'y':
             logging.info("Clearing album art for all files in %s", input_dir)
-            for file_path in pathlib.Path(input_dir).glob('**/*.mp3'):
-                track_info = services.TrackInfo(str(file_path))
+            scan_dir = pathlib.Path(input_dir)
+            for file_path in itertools.chain(scan_dir.rglob('*.flac'), scan_dir.rglob('*.mp3')):
+                track_info = services.TrackInfo.from_file(file_path)
                 if track_info.album_art:
                     logger.info("Clearing album art from file %s", file_path)
-                    track_info.file_info.pop('APIC:')
+                    if track_info.type == FileType.MP3:
+                        track_info.file_info.pop('APIC:')
+                    elif track_info.type == FileType.FLAC:
+                        track_info.file_info.clear_pictures()
                     track_info.file_info.save()
 
 
@@ -38,16 +46,29 @@ def fetch_album_art(input_dir: str, service, force: bool = False):
     :param force: Set to true in order to save the album art even if it exists.
     """
     logging.info("Fetching album art for all files in %s", input_dir)
-    for file_path in pathlib.Path(input_dir).glob('**/*.mp3'):
-        track_info = services.TrackInfo(str(file_path))
-        if track_info.album_art is None or force:
-            album_art = service.album_art(track_info.album_artist, track_info.album)
+    input_dir_path = pathlib.Path(input_dir)
+    for file_path in itertools.chain(input_dir_path.rglob('*.flac'), input_dir_path.rglob('*.mp3')):
+        track_info = services.TrackInfo.from_file(file_path)
+        if not track_info.album_art or force:
+            logging.info("Fetching album art for file %s", file_path)
+            artist = track_info.album_artist if track_info.album_artist else track_info.artist
+            album_art = service.album_art(artist, track_info.album)
             if album_art:
-                track_info.file_info.tags.add(mutagen.id3.APIC(
-                    encoding=mutagen.id3.Encoding.LATIN1, data=album_art, mime="image/jpeg",
-                    type=mutagen.id3.PictureType.COVER_FRONT)
-                )
+                if track_info.type == FileType.MP3:
+                    track_info.file_info.tags.add(mutagen.id3.APIC(
+                        encoding=mutagen.id3.Encoding.LATIN1, data=album_art, mime='image/jpeg',
+                        type=mutagen.id3.PictureType.COVER_FRONT)
+                    )
+                elif track_info.type == FileType.FLAC:
+                    image = mutagen.flac.Picture()
+                    image.mime = 'image/jpeg'
+                    image.data = album_art
+                    image.type = mutagen.id3.PictureType.COVER_FRONT
+                    track_info.file_info.clear_pictures()
+                    track_info.file_info.add_picture(image)
                 track_info.file_info.save()
+            else:
+                logger.warning("Album art not found")
 
 
 def export_album_art(input_dir: str, service, output_dir: str, force: bool = False):

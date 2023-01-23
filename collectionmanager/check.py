@@ -73,7 +73,7 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
         logger.warning("Track title capitalization is wrong for file '%s': %s", file, track_info.title)
 
     # Check album art
-    if not track_info.album_art_exists:
+    if not track_info.album_art:
         logger.warning("Album art is missing for file '%s", file)
 
 

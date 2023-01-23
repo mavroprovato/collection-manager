@@ -35,6 +35,8 @@ class LastFmService(base.BaseService):
         response = requests.get(self.API_ROOT, params={
             'method': 'album.getinfo', 'api_key': self._api_key, 'artist': artist, 'album': album, 'format': 'json'
         })
+        if response.status_code == 404:
+            return
         response.raise_for_status()
 
         # Get the album art if it exists
