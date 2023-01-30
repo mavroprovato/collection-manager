@@ -66,7 +66,7 @@ class TrackInfo:
                     pass
             if 'TRCK' in track_info.file_info:
                 try:
-                    track_info.number = int(str(track_info.file_info['TPOS'][0]))
+                    track_info.number = int(str(track_info.file_info['TRCK'][0]))
                 except ValueError:
                     pass
             track_info.title = track_info.file_info['TIT2'][0] if 'TIT2' in track_info.file_info else None
