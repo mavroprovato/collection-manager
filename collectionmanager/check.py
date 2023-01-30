@@ -16,7 +16,7 @@ UNSAFE_CHARACTERS = re.compile(r'[<>:"/\\|?*]')
 UNSAFE_CHARACTERS_REPLACE = '_'
 # The file name pattern
 FILE_NAME_PATTERN = re.compile(
-    r'(?P<artist>[^/]+)/\[(?P<year>[0-9]{4})] (?P<album>[^/]+)/([0-9\-]+)\. (.+).(?P<type>mp3|flac)')
+    r'(?P<artist>[^/]+)/\[(?P<year>[0-9]{4})] (?P<album>[^/]+)/(?P<track_number>[0-9\-]+)\. (.+).(?P<type>mp3|flac)')
 
 
 def check_capitalisation(name: str) -> bool:
@@ -50,27 +50,27 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
     if not track_info.artist:
         logger.warning("Artist info is missing for file '%s", file)
     elif not check_capitalisation(track_info.artist):
-        logger.warning("Artist capitalization is wrong for file '%s': %s", file, track_info.artist)
+        logger.warning("Artist info capitalization is wrong for file '%s': %s", file, track_info.artist)
 
     # Check track album
     if not track_info.album:
-        logger.warning("Track album is missing for file '%s", file)
+        logger.warning("Track album info is missing for file '%s", file)
     elif not check_capitalisation(track_info.album):
-        logger.warning("Track album capitalization is wrong for file '%s': %s", file, track_info.album)
+        logger.warning("Track album info capitalization is wrong for file '%s': %s", file, track_info.album)
 
     # Check track year
     if not track_info.year:
-        logger.warning("Track year is missing for file '%s", file)
+        logger.warning("Track year info is missing for file '%s", file)
 
     # Check track number
     if not track_info.number:
-        logger.warning("Track number is missing for file '%s", file)
+        logger.warning("Track number info is missing for file '%s", file)
 
     # Check track title
     if not track_info.title:
-        logger.warning("Track title is missing for file '%s", file)
+        logger.warning("Track title info is missing for file '%s", file)
     elif not check_capitalisation(track_info.title):
-        logger.warning("Track title capitalization is wrong for file '%s': %s", file, track_info.title)
+        logger.warning("Track title info capitalization is wrong for file '%s': %s", file, track_info.title)
 
     # Check album art
     if not track_info.album_art:
