@@ -36,6 +36,7 @@ class TrackInfo:
     disk_number: int = None
     title: str = None
     number: int = None
+    compilation: bool = False
     file_info: dict = None
     album_art: AlbumArt = None
 
@@ -72,6 +73,7 @@ class TrackInfo:
             track_info.title = track_info.file_info['TIT2'][0] if 'TIT2' in track_info.file_info else None
             if 'APIC:' in track_info.file_info:
                 track_info.album_art = AlbumArt(track_info.file_info['APIC:'].mime, track_info.file_info['APIC:'].data)
+            track_info.compilation = track_info.file_info['TCMP'][0] if 'TCMP' in track_info.file_info else False
         elif isinstance(track_info.file_info, mutagen.flac.FLAC):
             track_info.type = FileType.FLAC
             track_info.artist = track_info.file_info['artist'][0] if 'artist' in track_info.file_info else None
@@ -97,5 +99,7 @@ class TrackInfo:
             if track_info.file_info.pictures:
                 track_info.album_art = AlbumArt(
                     track_info.file_info.pictures[0].mime, track_info.file_info.pictures[0].data)
+            track_info.compilation = track_info.file_info['compilation'][0] if 'compilation' in track_info.file_info \
+                else False
 
         return track_info

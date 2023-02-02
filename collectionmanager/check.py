@@ -44,11 +44,12 @@ def replace_unsafe_chars(string: str) -> str:
     return UNSAFE_CHARACTERS.sub(UNSAFE_CHARACTERS_REPLACE, string)
 
 
-def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
+def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool = True):
     """Check if the file contains usafe characters.
 
-    :param scan_dir: The scan directory
-    :param file: The file
+    :param scan_dir: The scan directory.
+    :param file: The file to check.
+    :param check_album_art: Set to true to check for album art existence.
     """
     logger.info("Checking file '%s", file)
     for part in file.relative_to(scan_dir).parts:
@@ -84,7 +85,7 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
         logger.warning("Track title info capitalization is wrong for file '%s': %s", file, track_info.title)
 
     # Check album art
-    if not track_info.album_art:
+    if check_album_art and not track_info.album_art:
         logger.warning("Album art is missing for file '%s", file)
 
     # Check naming conventions
@@ -110,8 +111,10 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path):
             logger.warning("File name track number does not match file info for file '%s', should be '%s', is '%s'",
                            file, track_info.number, match.group('track_number'))
 
-        # TODO: replace this with a better way to check for compilations
-        if track_info.album_artist != 'Various Artists' and match.group('artist') != 'Various Artists':
+        if track_info.compilation:
+            # TODO: check naming convention for compilations
+            pass
+        else:
             if track_info.artist and match.group('artist') != replace_unsafe_chars(track_info.artist):
                 logger.warning("File name artist does not match file info for file '%s', should be '%s', is '%s'",
                                file, track_info.artist, match.group('artist'))
@@ -128,11 +131,12 @@ def main():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("scan_dir", help="The directory to scan for files")
+    parser.add_argument("--check-album-art", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
     scan_dir = pathlib.Path(args.scan_dir)
     for file in itertools.chain(scan_dir.rglob('*.flac'), scan_dir.rglob('*.mp3')):
-        check_file(scan_dir, file)
+        check_file(scan_dir=scan_dir, file=file, check_album_art=args.check_album_art)
 
 
 if __name__ == '__main__':
