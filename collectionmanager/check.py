@@ -25,8 +25,8 @@ FILE_NAME_PATTERN = re.compile(
 # The file name pattern
 COMPILATION_FILE_NAME_PATTERN = re.compile(
     r'(?P<album_artist>[^/]+)/'
-    r'\[(?P<year>[0-9]{4})] (?P<album>[^/]+)/'
-    r'(?P<disk_number>[0-9]?)-?(?P<track_number>[0-9]{2})\. (?P<artist>[^-]+) - (?P<title>.+).(?P<type>mp3|flac)')
+    r'\[(?P<year>[0-9]{4})] (?P<album>[^/]+?)/'
+    r'(?P<disk_number>[0-9]?)-?(?P<track_number>[0-9]{2})\. (?P<artist>.+?) - (?P<title>.+).(?P<type>mp3|flac)')
 
 
 def check_capitalisation(name: str) -> bool:
@@ -98,7 +98,7 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool
 
     # Check naming conventions
     relative_file_name = str(file.relative_to(file.parent.parent.parent))
-    match = FILE_NAME_PATTERN.match(relative_file_name) if track_info.compilation \
+    match = COMPILATION_FILE_NAME_PATTERN.match(relative_file_name) if track_info.compilation \
         else FILE_NAME_PATTERN.match(relative_file_name)
     if match:
         # Check track year
@@ -109,6 +109,10 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool
         if track_info.album and match.group('album') != replace_unsafe_chars(track_info.album):
             logger.warning("File name album does not match file info for file '%s', should be '%s', is '%s'",
                            file, track_info.album, match.group('album'))
+        # Check track artist
+        if track_info.artist and match.group('artist') != replace_unsafe_chars(track_info.artist):
+            logger.warning("File name artist does not match file info for file '%s', should be '%s', is '%s'",
+                           file, track_info.artist, match.group('artist'))
         # Check disk number
         if match.group('disk_number'):
             if not track_info.disk_number or int(match.group('disk_number')) != track_info.disk_number:
@@ -118,19 +122,16 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool
         if track_info.number and int(match.group('track_number')) != track_info.number:
             logger.warning("File name track number does not match file info for file '%s', should be '%s', is '%s'",
                            file, track_info.number, match.group('track_number'))
+        # Check track title
+        if track_info.title and match.group('title') != replace_unsafe_chars(track_info.title):
+            logger.warning("File name title does not match file info for file '%s', should be '%s', is '%s'",
+                           file, track_info.title, match.group('title'))
 
         if track_info.compilation:
-            # TODO: check naming convention for compilations
-            pass
-        else:
-            # Check track artist
-            if track_info.artist and match.group('artist') != replace_unsafe_chars(track_info.artist):
+            # Check track album artist
+            if track_info.album_artist and match.group('album_artist') != replace_unsafe_chars(track_info.album_artist):
                 logger.warning("File name artist does not match file info for file '%s', should be '%s', is '%s'",
-                               file, track_info.artist, match.group('artist'))
-            # Check track title
-            if track_info.title and match.group('title') != replace_unsafe_chars(track_info.title):
-                logger.warning("File name title does not match file info for file '%s', should be '%s', is '%s'",
-                               file, track_info.title, match.group('title'))
+                               file, track_info.album_artist, match.group('album_artist'))
     else:
         logger.warning("File name '%s' does not match naming conventions", file)
 
