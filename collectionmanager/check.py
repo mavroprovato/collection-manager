@@ -108,11 +108,11 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool
         # Check track album
         if track_info.album and match.group('album') != replace_unsafe_chars(track_info.album):
             logger.warning("File name album does not match file info for file '%s', should be '%s', is '%s'",
-                           file, track_info.album, match.group('album'))
+                           file, replace_unsafe_chars(track_info.album), match.group('album'))
         # Check track artist
         if track_info.artist and match.group('artist') != replace_unsafe_chars(track_info.artist):
             logger.warning("File name artist does not match file info for file '%s', should be '%s', is '%s'",
-                           file, track_info.artist, match.group('artist'))
+                           file, replace_unsafe_chars(track_info.artist), match.group('artist'))
         # Check disk number
         if match.group('disk_number'):
             if not track_info.disk_number or int(match.group('disk_number')) != track_info.disk_number:
@@ -125,13 +125,13 @@ def check_file(scan_dir: pathlib.Path, file: pathlib.Path, check_album_art: bool
         # Check track title
         if track_info.title and match.group('title') != replace_unsafe_chars(track_info.title):
             logger.warning("File name title does not match file info for file '%s', should be '%s', is '%s'",
-                           file, track_info.title, match.group('title'))
+                           file, replace_unsafe_chars(track_info.title), match.group('title'))
 
         if track_info.compilation:
             # Check track album artist
             if track_info.album_artist and match.group('album_artist') != replace_unsafe_chars(track_info.album_artist):
                 logger.warning("File name artist does not match file info for file '%s', should be '%s', is '%s'",
-                               file, track_info.album_artist, match.group('album_artist'))
+                               file, replace_unsafe_chars(track_info.album_artist), match.group('album_artist'))
     else:
         logger.warning("File name '%s' does not match naming conventions", file)
 
