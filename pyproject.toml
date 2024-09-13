@@ -3,18 +3,17 @@ name = "collection-manager"
 version = "0.1.0"
 description = ""
 authors = ["Kostas Kokkoros <mavroprovato@gmail.com>"]
-license = "GPLv3"
+license = "GPL-3.0-or-later"
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-requests = "2.31.0"
-PyQt5 = "^5.15.2"
-mutagen = "^1.45.1"
-SQLAlchemy = "^2.0.0"
-Pillow = "^9.3.0"
-
-[tool.poetry.dev-dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+pyqt5 = "^5.15.11"
+mutagen = "^1.47.0"
+sqlalchemy = "^2.0.34"
+pillow = "^10.4.0"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
