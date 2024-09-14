@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import itertools
 import logging
 import os
 import pathlib
@@ -10,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from collectionmanager.db import models
+from . import models
 
 
 class Database:
@@ -35,6 +36,7 @@ class Database:
         db_file_path.parent.mkdir(parents=True, exist_ok=True)
         # Create engine
         engine = create_engine(f'sqlite:///{db_file_path}?check_same_thread=false')
+        print(f'sqlite:///{db_file_path}?check_same_thread=false')
         if not db_file_path.exists():
             # Crate the database if it does not exist
             logging.info("Database file does not exist, creating")
@@ -80,7 +82,7 @@ class Database:
 
         # Scan the directory
         logging.info(f"Scanning directory {directory_path}")
-        for file_path in directory_path.glob('**/*.mp3'):
+        for file_path in itertools.chain(directory_path.glob('**/*.mp3'), directory_path.glob('**/*.flac')):
             self._process_file(session, directory_path, file_path, force)
 
         # Save the changes
@@ -165,14 +167,15 @@ class Database:
 
         # Populate track with ID3 information
         logging.info(f"Reading file information for {file_path}")
-        track_info = models.Track.from_id3(file_path)
+        from collectionmanager.services.trackinfo import TrackInfo
+        track_info = TrackInfo.from_file(file_path)
 
         # Add album artist information
         album_artist = None
-        if track_info['album_artist']:
-            album_artist = session.query(models.Artist).filter(models.Artist.name == track_info['album_artist']).first()
+        if track_info.album_artist:
+            album_artist = session.query(models.Artist).filter(models.Artist.name == track_info.album_artist).first()
             if not album_artist:
-                album_artist = models.Artist(name=track_info['album_artist'])
+                album_artist = models.Artist(name=track_info.album_artist)
                 session.add(album_artist)
             track.album_artist = album_artist
         else:
@@ -180,35 +183,35 @@ class Database:
 
         # Add track artist information
         track_artist = None
-        if track_info['track_artist']:
-            track_artist = session.query(models.Artist).filter(models.Artist.name == track_info['track_artist']).first()
+        if track_info.artist:
+            track_artist = session.query(models.Artist).filter(models.Artist.name == track_info.artist).first()
             if not track_artist:
-                track_artist = models.Artist(name=track_info['track_artist'])
+                track_artist = models.Artist(name=track_info.artist)
                 session.add(track_artist)
             track.track_artist = track_artist
         else:
             logging.warning("Track artist is missing")
 
         # Add the album information
-        if track_info['album'] and track_info['year']:
+        if track_info.album and track_info.year:
             album = session.query(models.Album).filter(
-                models.Album.name == track_info['album'], models.Album.year == track_info['year']
+                models.Album.name == track_info.album, models.Album.year == track_info.year
             ).first()
             if not album:
-                album = models.Album(name=track_info['album'], year=track_info['year'], artist=album_artist)
+                album = models.Album(name=track_info.album, year=track_info.year, artist=album_artist)
                 session.add(album)
             track.album = album
         else:
             logging.warning("Album name and/or year is missing")
 
         # Add track information
-        track.name = track_info['name']
+        track.name = track_info.title
         track.track_artist = track_artist
         track.album_artist = album_artist
-        track.disk_number = track_info['disk_number']
-        track.number = track_info['disk_number']
-        track.length = track_info['length']
-        track.encoder_info = track_info['encoder_info']
+        track.disk_number = track_info.disk_number
+        track.number = track_info.number
+        track.length = 0  # TODO: fix this
+        track.encoder_info = {}  # TODO: fix this
         track.last_scanned = datetime.datetime.now()
 
         session.add(track)
