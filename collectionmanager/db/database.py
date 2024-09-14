@@ -4,7 +4,6 @@ import logging
 import os
 import pathlib
 import sys
-import typing
 
 from PyQt5 import QtCore
 from sqlalchemy import create_engine
@@ -104,7 +103,7 @@ class Database:
 
         session.commit()
 
-    def directories(self) -> typing.List[models.Directory]:
+    def directories(self) -> list[models.Directory]:
         """Return the directories in the database.
 
         :return: A list with the directories.
@@ -113,7 +112,7 @@ class Database:
 
         return session.query(models.Directory).all()
 
-    def artists(self, order_by: str = 'name') -> typing.List[models.Artist]:
+    def artists(self, order_by: str = 'name') -> list[models.Artist]:
         """Return the tracks in the database.
 
         :return: A list with the tracks.
@@ -122,7 +121,7 @@ class Database:
 
         return session.query(models.Artist).order_by(order_by)
 
-    def tracks(self, artist: models.Artist = None, directory: models.Directory = None) -> typing.List[models.Track]:
+    def tracks(self, artist: models.Artist = None, directory: models.Directory = None) -> list[models.Track]:
         """Return the tracks in the database.
 
         :param artist: The artist to filter by.
