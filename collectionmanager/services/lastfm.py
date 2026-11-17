@@ -1,7 +1,6 @@
 """Integration with last.fm
 """
 import logging
-import typing
 
 import requests
 
@@ -24,19 +23,19 @@ class LastFmService(base.BaseService):
         super().__init__()
         self._api_key = api_key
 
-    def fetch_album_art(self, artist: str, album: str) -> typing.Optional[bytes]:
+    def fetch_album_art(self, artist: str, album: str) -> bytes | None:
         """Fetch album art.
 
         :param artist: The artist name.
         :param album: The album name.
-        :return The album art if found.
+        :return: The album art if found.
         """
         # Make the request for the album info
         response = requests.get(self.API_ROOT, params={
             'method': 'album.getinfo', 'api_key': self._api_key, 'artist': artist, 'album': album, 'format': 'json'
         })
         if response.status_code == 404:
-            return
+            return None
         response.raise_for_status()
 
         # Get the album art if it exists
@@ -46,3 +45,5 @@ class LastFmService(base.BaseService):
 
             if url:
                 return self.fetch_image_from_url(url)
+
+        return None
