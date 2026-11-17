@@ -28,7 +28,7 @@ class DiscogsService(base.BaseService):
 
         :param artist: The artist name.
         :param album: The album name.
-        :return The album art if found.
+        :return: The album art if found.
         """
         response = self.perform_request(f"{self.API_ROOT}/database/search", params={
             'artist': artist.replace(',', ' '), 'release_title': album.replace(',', ' '), 'token': self._token
@@ -41,12 +41,14 @@ class DiscogsService(base.BaseService):
                 if image:
                     return image
 
+        return None
+
     def fetch_genre(self, artist: str, album: str) -> typing.Optional[bytes]:
         """Fetch album genre.
 
         :param artist: The artist name.
         :param album: The album name.
-        :return The album art if found.
+        :return: The album art if found.
         """
         response = self.perform_request(f"{self.API_ROOT}/database/search", params={
             'artist': artist.replace(',', ' '), 'release_title': album.replace(',', ' '), 'token': self._token
@@ -55,3 +57,5 @@ class DiscogsService(base.BaseService):
         for result in response['results']:
             if 'style' in result and result['style']:
                 return result['style'][0]
+
+        return None
