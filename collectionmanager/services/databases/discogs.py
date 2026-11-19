@@ -6,7 +6,7 @@ import logging
 
 import requests
 
-from . import base
+from collectionmanager.services.databases import base
 
 logger = logging.getLogger(__name__)
 
